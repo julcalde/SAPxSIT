@@ -1,11 +1,11 @@
 {
   "xsappname": "supplier-onboarding",
   "tenant-mode": "dedicated",
-  "description": "Security descriptor for Supplier Self-Onboarding application",
+  "description": "Security descriptor for Supplier Self-Onboarding application with JWT-based magic links",
   "scopes": [
     {
       "name": "$XSAPPNAME.supplier.onboard",
-      "description": "External supplier can submit onboarding form"
+      "description": "External supplier can submit onboarding form (token-based access)"
     },
     {
       "name": "$XSAPPNAME.invitation.create",
@@ -13,25 +13,40 @@
     },
     {
       "name": "$XSAPPNAME.invitation.manage",
-      "description": "Manage all invitations (view, revoke)"
+      "description": "Manage all invitations (view, revoke, resend)"
     },
     {
       "name": "$XSAPPNAME.invitation.audit",
-      "description": "View audit logs"
+      "description": "View audit logs and compliance reports"
+    }
+  ],
+  "attributes": [
+    {
+      "name": "Department",
+      "description": "User's department for organizational filtering",
+      "valueType": "string"
+    },
+    {
+      "name": "CostCenter",
+      "description": "Cost center for budget tracking",
+      "valueType": "string"
     }
   ],
   "role-templates": [
     {
       "name": "SupplierOnboardingPurchaser",
-      "description": "Purchaser can create invitations",
+      "description": "Purchaser can create invitations for their department",
       "scope-references": [
         "$XSAPPNAME.invitation.create"
       ],
-      "attribute-references": []
+      "attribute-references": [
+        "Department",
+        "CostCenter"
+      ]
     },
     {
       "name": "SupplierOnboardingAdmin",
-      "description": "Admin can create and manage invitations",
+      "description": "Admin can create, manage, and audit all invitations",
       "scope-references": [
         "$XSAPPNAME.invitation.create",
         "$XSAPPNAME.invitation.manage",
@@ -41,7 +56,7 @@
     },
     {
       "name": "SupplierOnboardingAuditor",
-      "description": "Auditor can view logs",
+      "description": "Auditor can view logs and compliance reports",
       "scope-references": [
         "$XSAPPNAME.invitation.audit"
       ],
@@ -75,8 +90,20 @@
     "redirect-uris": [
       "https://*.applicationstudio.cloud.sap/**",
       "https://*.hana.ondemand.com/**",
-      "http://localhost:*/**"
+      "https://*.cfapps.*.hana.ondemand.com/**",
+      "http://localhost:*/**",
+      "http://localhost:4004/**"
     ],
-    "token-validity": 43200
-  }
+    "token-validity": 43200,
+    "refresh-token-validity": 86400,
+    "system-attributes": [
+      "rolecollections",
+      "Groups"
+    ],
+    "autoapprove": false
+  },
+  "foreign-scope-references": [],
+  "authorities": [
+    "$ACCEPT_GRANTED_AUTHORITIES"
+  ]
 }
