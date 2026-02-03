@@ -1,0 +1,157 @@
+{
+  "name": "supplier-onboarding",
+  "version": "1.0.0",
+  "description": "SAP BTP Supplier Self-Onboarding Solution - Secure supplier registration via magic links",
+  "author": "SAP BTP Team",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/supplier-onboarding.git"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch": "cds watch",
+    "dev": "cds watch --profile development",
+    "build": "cds build --production",
+    "deploy": "cf deploy mta_archives/supplier-onboarding_1.0.0.mtar",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --runInBand",
+    "test:unit": "jest --testPathPattern=test/unit",
+    "test:integration": "jest --testPathPattern=test/integration",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{js,json,md,yml,yaml}\"",
+    "db:deploy": "cds deploy --to hana",
+    "db:deploy:local": "cds deploy --to sqlite",
+    "setup:local": "npm install && npm run db:deploy:local",
+    "verify": "npm run lint && npm run test && npm run format:check"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "hana",
+        "model": [
+          "db",
+          "srv"
+        ],
+        "[development]": {
+          "kind": "sqlite",
+          "credentials": {
+            "database": "local.db"
+          }
+        }
+      },
+      "auth": {
+        "kind": "xsuaa",
+        "[development]": {
+          "kind": "mocked",
+          "users": {
+            "purchaser@test.com": {
+              "password": "initial",
+              "roles": [
+                "SupplierOnboardingPurchaser"
+              ]
+            },
+            "admin@test.com": {
+              "password": "initial",
+              "roles": [
+                "SupplierOnboardingAdmin"
+              ]
+            },
+            "auditor@test.com": {
+              "password": "initial",
+              "roles": [
+                "SupplierOnboardingAuditor"
+              ]
+            }
+          }
+        }
+      },
+      "destinations": true,
+      "S4HANA": {
+        "kind": "odata-v4",
+        "model": "srv/external",
+        "credentials": {
+          "destination": "s4hana-cloud-odata-v4",
+          "path": "/sap/opu/odata4/sap/api_business_partner/srvd_a2x/sap/businesspartner/0001"
+        }
+      }
+    },
+    "build": {
+      "target": "gen",
+      "tasks": [
+        {
+          "for": "hana",
+          "dest": "../db"
+        },
+        {
+          "for": "node-cf",
+          "dest": ".."
+        }
+      ]
+    },
+    "hana": {
+      "deploy-format": "hdbtable"
+    },
+    "features": {
+      "fetch_csrf": true
+    }
+  },
+  "dependencies": {
+    "@sap/cds": "^7.5.3",
+    "@sap/cds-dk": "^7.5.1",
+    "@sap/xsenv": "^4.2.0",
+    "@sap/xssec": "^3.6.1",
+    "@sap/hana-client": "^2.19.21",
+    "express": "^4.18.2",
+    "passport": "^0.7.0",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^9.0.1",
+    "aws-sdk": "^2.1515.0",
+    "dotenv": "^16.3.1",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "cors": "^2.8.5",
+    "joi": "^17.11.0",
+    "moment": "^2.30.1",
+    "axios": "^1.6.5"
+  },
+  "devDependencies": {
+    "@sap/eslint-plugin-cds": "^2.6.5",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jest": "^27.6.1",
+    "prettier": "^3.1.1",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "sqlite3": "^5.1.7",
+    "@jest/globals": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/test/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "srv/**/*.js",
+      "!srv/server.js",
+      "!**/node_modules/**"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    },
+    "testTimeout": 10000,
+    "verbose": true
+  }
+}

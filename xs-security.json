@@ -1,0 +1,82 @@
+{
+  "xsappname": "supplier-onboarding",
+  "tenant-mode": "dedicated",
+  "description": "Security descriptor for Supplier Self-Onboarding application",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.supplier.onboard",
+      "description": "External supplier can submit onboarding form"
+    },
+    {
+      "name": "$XSAPPNAME.invitation.create",
+      "description": "Create supplier invitation links"
+    },
+    {
+      "name": "$XSAPPNAME.invitation.manage",
+      "description": "Manage all invitations (view, revoke)"
+    },
+    {
+      "name": "$XSAPPNAME.invitation.audit",
+      "description": "View audit logs"
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "SupplierOnboardingPurchaser",
+      "description": "Purchaser can create invitations",
+      "scope-references": [
+        "$XSAPPNAME.invitation.create"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "SupplierOnboardingAdmin",
+      "description": "Admin can create and manage invitations",
+      "scope-references": [
+        "$XSAPPNAME.invitation.create",
+        "$XSAPPNAME.invitation.manage",
+        "$XSAPPNAME.invitation.audit"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "SupplierOnboardingAuditor",
+      "description": "Auditor can view logs",
+      "scope-references": [
+        "$XSAPPNAME.invitation.audit"
+      ],
+      "attribute-references": []
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "supplier-onboarding-purchaser-rc",
+      "description": "Purchaser role collection",
+      "role-template-references": [
+        "$XSAPPNAME.SupplierOnboardingPurchaser"
+      ]
+    },
+    {
+      "name": "supplier-onboarding-admin-rc",
+      "description": "Administrator role collection",
+      "role-template-references": [
+        "$XSAPPNAME.SupplierOnboardingAdmin"
+      ]
+    },
+    {
+      "name": "supplier-onboarding-auditor-rc",
+      "description": "Auditor role collection",
+      "role-template-references": [
+        "$XSAPPNAME.SupplierOnboardingAuditor"
+      ]
+    }
+  ],
+  "oauth2-configuration": {
+    "redirect-uris": [
+      "https://*.applicationstudio.cloud.sap/**",
+      "https://*.hana.ondemand.com/**",
+      "http://localhost:*/**"
+    ],
+    "token-validity": 43200
+  }
+}

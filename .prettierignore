@@ -1,0 +1,9 @@
+# Prettier ignore patterns
+node_modules/
+gen/
+dist/
+mta_archives/
+*.db
+*.log
+coverage/
+.nyc_output/
