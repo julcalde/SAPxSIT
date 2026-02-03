@@ -29,21 +29,21 @@ Enable external suppliers to self-register via secure, time-limited magic links 
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         SAP BTP Environment                      │
-│                                                                  │
-│  ┌──────────────┐    ┌──────────────┐    ┌─────────────────┐  │
-│  │  Build Apps  │───▶│  CAP Service │───▶│  S/4HANA Cloud  │  │
-│  │  (Supplier   │    │  (Node.js)   │    │  (OData V4)     │  │
-│  │   Frontend)  │    │              │    │                 │  │
-│  └──────────────┘    └──────┬───────┘    └─────────────────┘  │
-│                              │                                   │
-│                              ▼                                   │
+│                         SAP BTP Environment                     │
+│                                                                 │
+│  ┌──────────────┐    ┌──────────────┐    ┌─────────────────┐    │
+│  │  Build Apps  │───▶│  CAP Service │───▶│  S/4HANA Cloud  │    │
+│  │  (Supplier   │    │  (Node.js)   │    │  (OData V4)     │    │
+│  │   Frontend)  │    │              │    │                 │    │
+│  └──────────────┘    └──────┬───────┘    └─────────────────┘    │
+│                              │                                  │
+│                              ▼                                  │
 │                      ┌──────────────┐                           │
 │                      │  HANA Cloud  │                           │
 │                      │  (Database)  │                           │
 │                      └──────────────┘                           │
-│                              │                                   │
-│                              ▼                                   │
+│                              │                                  │
+│                              ▼                                  │
 │                      ┌──────────────┐                           │
 │                      │ Object Store │                           │
 │                      │    (S3)      │                           │
