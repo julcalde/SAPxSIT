@@ -66,7 +66,9 @@ Enable external suppliers to self-register via secure, time-limited magic links 
 
 ### Prerequisites
 
-- Node.js 18+ and npm 9+
+- [Node.js](https://nodejs.org/) v18+ and npm 9+
+- **[SAP CAP Development Kit](https://cap.cloud.sap/docs/get-started/)**: `npm i -g @sap/cds-dk`
+- [SQLite](https://sqlite.org/) for local development
 - SAP BTP account with Cloud Foundry enabled
 - SAP HANA Cloud instance
 - S/4HANA Cloud Public Edition tenant
@@ -86,23 +88,38 @@ Enable external suppliers to self-register via secure, time-limited magic links 
    npm install
    ```
 
-3. **Set up local environment**
+3. **Deploy local database (SQLite)**
    ```bash
-   cp env/.env.template .env.local
-   # Edit .env.local with your configuration
+   cds deploy --to sqlite
+   # or: npm run db:deploy:local
    ```
 
-4. **Deploy local database**
+4. **Start development server with auto-reload**
    ```bash
-   npm run db:deploy:local
-   ```
-
-5. **Start development server**
-   ```bash
-   npm run watch
+   cds watch
+   # or: npm run watch
    ```
 
    Server runs at: http://localhost:4004
+
+### SAP CAP Quick Commands
+
+Following [SAP CAP conventions](https://cap.cloud.sap/docs/):
+
+```bash
+# Development
+cds watch                    # Start with live reload (recommended)
+cds serve                    # Start server
+cds deploy --to sqlite       # Deploy to local SQLite
+
+# Testing
+npm test                     # Run all tests
+npm run test:coverage        # With coverage report
+
+# Production Build
+cds build                    # Build for production
+npm run deploy               # Deploy to BTP
+```
 
 ---
 

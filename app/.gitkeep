@@ -1,0 +1,26 @@
+# UI Content
+
+This directory contains UI-related content for the Supplier Self-Onboarding application.
+
+## Structure
+
+```
+app/
+├── fiori-annotations.cds    # SAP Fiori UI annotations
+├── common.cds               # Common UI annotations (@title, value helps)
+└── index.html               # Application router entry point (if needed)
+```
+
+## Future Content
+
+- SAP Fiori Elements annotations for admin UI
+- SAP Build Apps configuration references
+- Launchpad configuration
+- Custom UI5 apps (if any)
+
+## SAP CAP Standard
+
+Following SAP CAP convention over configuration:
+- UI annotations separated from domain model
+- Fiori Elements-first approach
+- Reuse common annotations pattern

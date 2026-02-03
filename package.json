@@ -13,7 +13,7 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "start": "cds-serve",
+    "start": "cds serve",
     "watch": "cds watch",
     "dev": "cds watch --profile development",
     "build": "cds build --production",
@@ -35,15 +35,17 @@
   "cds": {
     "requires": {
       "db": {
-        "kind": "hana",
-        "model": [
-          "db",
-          "srv"
-        ],
+        "kind": "sql",
+        "[production]": {
+          "kind": "hana",
+          "vcap": {
+            "label": "hana"
+          }
+        },
         "[development]": {
           "kind": "sqlite",
           "credentials": {
-            "database": "local.db"
+            "database": "db.sqlite"
           }
         }
       },
