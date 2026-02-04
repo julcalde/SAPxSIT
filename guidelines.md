@@ -58,7 +58,11 @@ Execution style – very strict rules
 • **Git workflow rules - self-approved actions:**
   - Use `git log` freely to verify project history and completed steps
   - Use `git add` to stage completed work from each step
-  - Use `git commit -m "message"` with short descriptive messages (max 3 sentences)
+  - Use `git commit -m "message"` with descriptive messages that explain WHAT was achieved and WHY it matters
+    * ❌ BAD: "Step 11 complete" or "Added 500 lines" or "S/4HANA integration done"
+    * ✅ GOOD: "Add S/4HANA Business Partner client with OData V4, CSRF caching, and retry logic"
+    * ✅ BETTER: "Implement S/4HANA integration: BP/Supplier creation via OData V4 with automatic retries"
+    * Focus on capabilities, features, and business value - not step numbers or line counts
   - **NEVER use `git push`** - this requires explicit user approval
   - Always verify previous work via git log before resuming a project
 
