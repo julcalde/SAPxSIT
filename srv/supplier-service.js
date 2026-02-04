@@ -112,66 +112,41 @@ module.exports = async (srv) => {
    * 
    * @param {Object} data - Form data with company, contact, bank details
    * @returns {Object} - Success status, reference number, S/4HANA IDs
+   * 
+   * Note: Most validations now handled by CDS declarative annotations (@assert)
+   * Only business logic validations remain here
    */
   srv.on('submitSupplierData', async (req) => {
     const { data } = req;
     const { invitationId, email } = req.invitation;
     
     try {
-      // Step 1: Validate all required fields
+      // Step 1: Business logic validations (CDS handles format validations)
       const validationErrors = [];
       
-      // Company information validation
-      if (!data.companyLegalName || data.companyLegalName.trim().length < 2) {
-        validationErrors.push({ field: 'companyLegalName', message: 'Company legal name is required (minimum 2 characters)' });
-      }
-      
+      // Business rule: Tax ID or VAT number required (at least one)
       if (!data.taxId && !data.vatNumber) {
-        validationErrors.push({ field: 'taxId', message: 'Tax ID or VAT number is required' });
+        validationErrors.push({ 
+          field: 'taxId', 
+          message: 'Either Tax ID or VAT number is required' 
+        });
       }
       
-      if (data.taxId && !validateTaxId(data.taxId)) {
-        validationErrors.push({ field: 'taxId', message: 'Invalid tax ID format' });
-      }
-      
-      if (!data.country_code || data.country_code.length !== 2) {
-        validationErrors.push({ field: 'country_code', message: 'Valid country code is required (ISO 3166-1 alpha-2)' });
-      }
-      
-      // Contact validation
-      if (!data.primaryContactName || data.primaryContactName.trim().length < 2) {
-        validationErrors.push({ field: 'primaryContactName', message: 'Primary contact name is required' });
-      }
-      
-      if (!data.primaryContactEmail || !validateEmail(data.primaryContactEmail)) {
-        validationErrors.push({ field: 'primaryContactEmail', message: 'Valid email address is required' });
-      }
-      
-      if (data.primaryContactPhone && !validatePhoneNumber(data.primaryContactPhone)) {
-        validationErrors.push({ field: 'primaryContactPhone', message: 'Invalid phone number format' });
-      }
-      
-      // Banking information validation
-      if (data.iban && !validateIBAN(data.iban)) {
-        validationErrors.push({ field: 'iban', message: 'Invalid IBAN format' });
-      }
-      
-      // Website URL validation
-      if (data.websiteUrl && !validateUrl(data.websiteUrl)) {
-        validationErrors.push({ field: 'websiteUrl', message: 'Invalid website URL format' });
-      }
-      
-      // Check for existing attachments
+      // Business rule: At least one attachment required
       const attachments = await db.run(
         SELECT.from(AttachmentMetadata)
           .where({ invitation_ID: invitationId, isDeleted: false })
       );
       
       if (!attachments || attachments.length === 0) {
-        validationErrors.push({ field: 'attachments', message: 'At least one attachment is required' });
+        validationErrors.push({ 
+          field: 'attachments', 
+          message: 'At least one supporting document is required' 
+        });
       }
       
-      // Return validation errors if any
+      // Return business validation errors if any
+      // (CDS format validations will have failed earlier via @assert)
       if (validationErrors.length > 0) {
         return {
           success: false,

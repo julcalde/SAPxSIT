@@ -2,7 +2,23 @@
  * Data Validators Utility Module
  * 
  * Provides validation functions for supplier onboarding data.
- * Used by supplier-service.js to validate form inputs.
+ * 
+ * NOTE: As of CAP standards review (Feb 2026), most format validations are now
+ * handled declaratively via CDS @assert annotations in db/schema.cds.
+ * 
+ * These functions remain for:
+ * - Complex validations not expressible in regex (e.g., IBAN checksum)
+ * - Runtime validations in non-CDS contexts
+ * - Testing and utilities
+ * 
+ * CDS handles these declaratively:
+ * ✅ Email format (@assert.format)
+ * ✅ Tax ID format (@assert.format)
+ * ✅ SWIFT code format (@assert.format)
+ * ✅ Phone number format (@assert.format)
+ * ✅ URL format (@assert.format)
+ * ✅ IBAN format (@assert.format)
+ * ✅ Postal code format (@assert.format)
  * 
  * Features:
  * - Email validation (RFC 5322 compliant)
