@@ -1,0 +1,24 @@
+{
+  "Rules": [
+    {
+      "Id": "DeleteAfter90Days",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": ""
+      },
+      "Expiration": {
+        "Days": 90
+      }
+    },
+    {
+      "Id": "DeleteIncompleteUploadsAfter1Day",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": ""
+      },
+      "AbortIncompleteMultipartUpload": {
+        "DaysAfterInitiation": 1
+      }
+    }
+  ]
+}
