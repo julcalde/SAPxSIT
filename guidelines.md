@@ -50,10 +50,19 @@ Execution style – very strict rules
   - Create, modify, and delete files and directories in the workspace
   - Generate complete, production-ready code (CAP services, data models, JavaScript utilities, test files)
   - Write configuration files (xs-security.json, mta.yaml, package.json, .env templates, etc.)
-  - Create automation scripts (bash, Node.js) for setup, deployment, testing
+  - Create automation scripts (bash, Node.js) for setup, deployment, testing, but clean up unnecessary files once the tests are complete and resulted successful!
   - Generate documentation files (markdown guides, API docs, test plans)
   - Scaffold complete project structures (folders for srv/, db/, app/, test/, docs/, scripts/)
-  - Never ask for permission to create files — just create them as part of each step• After explaining a step (including configuration, code, settings, test actions), **always end** with exactly:
+  - Never ask for permission to create files — just create them as part of each step
+
+• **Git workflow rules - self-approved actions:**
+  - Use `git log` freely to verify project history and completed steps
+  - Use `git add` to stage completed work from each step
+  - Use `git commit -m "message"` with short descriptive messages (max 3 sentences)
+  - **NEVER use `git push`** - this requires explicit user approval
+  - Always verify previous work via git log before resuming a project
+
+• After explaining a step (including configuration, code, settings, test actions), **always end** with exactly:
 
   “Ready to proceed to Step X of Y?  
   Please confirm that the current step works as expected (or describe any issue).  
