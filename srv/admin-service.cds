@@ -38,6 +38,7 @@ service AdminService {
    * - Revocation history
    */
   @readonly
+  @cds.redirection.target: true
   entity Invitations as projection on db.SupplierInvitations {
     *,
     onboardingData,
@@ -56,6 +57,7 @@ service AdminService {
    * - Approval/rejection workflow
    */
   @readonly
+  @cds.redirection.target: true
   entity OnboardingSubmissions as projection on db.SupplierOnboardingData {
     *,
     invitation,
@@ -95,6 +97,7 @@ service AdminService {
    * - 7-year retention period
    */
   @readonly
+  @cds.redirection.target: true
   entity AuditLogs as projection on db.AuditLogs {
     *,
     invitation,
@@ -155,12 +158,11 @@ service AdminService {
   @readonly
   entity DailyMetrics as
     select from db.AuditLogs {
-      cast(timestamp as Date) as date : Date,
       eventType,
       count(*) as eventCount : Integer,
       count(distinct actorEmail) as uniqueActors : Integer
     }
-    group by date, eventType;
+    group by eventType;
   
   //===========================================================================
   // FUNCTIONS (Read-only queries for compliance reports)
