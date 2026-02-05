@@ -9,47 +9,47 @@ service SupplierService @(requires: 'none') {
   // Suppliers - external users submit their data
   entity Suppliers as projection on db.Suppliers {
     *
-  } actions {
-    // Custom action to submit supplier data with token
-    action submitData(
-      token: String(500),
-      companyData: {
-        companyName: String;
-        legalForm: String;
-        taxID: String;
-        vatID: String;
-        street: String;
-        city: String;
-        postalCode: String;
-        country: String;
-        email: String;
-        phone: String;
-        website: String;
-        bankName: String;
-        iban: String;
-        swiftCode: String;
-        commodityCodes: String;
-        certifications: String;
-      }
-    ) returns {
-      success: Boolean;
-      supplierID: String;
-      message: String;
-    };
   };
   
-  // Attachments - request presigned URLs for upload
-  entity Attachments as projection on db.Attachments actions {
-    // Request presigned URL for file upload
-    action requestUploadURL(
-      token: String(500),
-      fileName: String(255),
-      fileType: String(50),
-      fileSize: Integer
-    ) returns {
-      presignedUrl: String;
-      expiresIn: Integer;
-      s3Key: String;
-    };
+  // Attachments - file upload metadata
+  entity Attachments as projection on db.Attachments;
+  
+  // Custom action to submit supplier data with token (unbound - service level)
+  action submitData(
+    token: String(500),
+    companyData: {
+      companyName: String;
+      legalForm: String;
+      taxID: String;
+      vatID: String;
+      street: String;
+      city: String;
+      postalCode: String;
+      country: String;
+      email: String;
+      phone: String;
+      website: String;
+      bankName: String;
+      iban: String;
+      swiftCode: String;
+      commodityCodes: String;
+      certifications: String;
+    }
+  ) returns {
+    success: Boolean;
+    supplierID: String;
+    message: String;
+  };
+  
+  // Request presigned URL for file upload (unbound - service level)
+  action requestUploadURL(
+    token: String(500),
+    fileName: String(255),
+    fileType: String(50),
+    fileSize: Integer
+  ) returns {
+    presignedUrl: String;
+    expiresIn: Integer;
+    s3Key: String;
   };
 }

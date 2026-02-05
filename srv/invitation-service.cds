@@ -12,17 +12,17 @@ service InvitationService {
     *,
     supplier.companyName as supplierCompanyName,
     supplier.s4hanaStatus as supplierStatus
-  } actions {
-    // Custom action to generate a new invitation
-    action generateInvitation(
-      supplierEmail: String(255),
-      supplierName: String(255)
-    ) returns {
-      invitationID: String;
-      invitationURL: String;
-      token: String;
-      expiresAt: DateTime;
-    };
+  };
+  
+  // Custom action to generate a new invitation (unbound - service level)
+  action generateInvitation(
+    supplierEmail: String(255),
+    supplierName: String(255)
+  ) returns {
+    invitationID: String;
+    invitationURL: String;
+    token: String;
+    expiresAt: DateTime;
   };
   
   // Read-only view of suppliers for monitoring
