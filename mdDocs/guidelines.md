@@ -310,6 +310,66 @@ Build a complete, production-grade, secure **supplier self-onboarding** solution
 - CDS Reference → https://cap.cloud.sap/docs/cds/
 - Node.js Runtime → https://cap.cloud.sap/docs/node.js/
 
+**SAP Build Code with Joule (Generative AI):**
+- Full-Stack App Development with Joule → https://zequance.ai/how-to-build-your-first-full-stack-app-in-sap-build-code-with-joule-and-generative-ai-step-by-step-guide/
+  - **5-Step Process for Full-Stack Application Development:**
+    1. **Start with a Full-Stack Template** – Kick off your project using a prebuilt template in SAP Build Code for faster setup
+    2. **Define Data Entities & Services** – Leverage Joule's Generative AI to model your data and auto-generate backend services
+    3. **Generate Business Logic with AI** – Use Joule to create application logic and automate repetitive coding tasks
+    4. **Design the User Interface** – Add a custom UI using SAP Build Code's visual tools and low-code components
+    5. **Test & Refine the Application** – Run end-to-end tests and enhance your app to ensure smooth functionality
+
+  - **Detailed 35-Step Implementation Guide:**
+    - **Setup & Project Creation (Steps 1-14):**
+      1. Logon to SAP BTP Trial account
+      2. Click "Go To Your Trial Account"
+      3. Click on Boosters
+      4. Search for "Get started with SAP Build Code" and click
+      5. Click on Start
+      6. Wait for automatic SAP Build setup
+      7. Click on Navigate to Subaccount
+      8. Click on Instances and Subscriptions
+      9. Click on SAP Build Code
+      10. Click on Create
+      11. Choose Build an Application → SAP Build Code
+      12. Choose Full Stack Application
+      13. Provide project name and select Node or Java development stack
+      14. Click on created project → Navigate to SAP Business Application Studio
+
+    - **Joule AI-Powered Development (Steps 15-27):**
+      15. Click on Joule Icon
+      16. Type "/" in command section and select "cap-gen-app"
+      17. Paste Joule prompt: "Design a customer loyalty program application. Define 4 data entities: Customers, Products, Purchases and Redemptions. Each customer must have: name, email, 7-digit customer number, total purchase value, total reward points, total redeemed reward points. All fields for each customer should be integer except name and email (string). Each product should have name, description and price. Purchases include purchase value and reward points (integer). Redemptions have 1 redeemed amount field (integer). Each purchase/redemption associates to a customer. Each purchase associates to a product (called selectedProduct)."
+      18. Click on Accept
+      19. Screen updates after prompt execution → Choose Open Editor → Select Sample Data
+      20. Choose Customers with value 5 → Press Add (creates 5 sample customer records)
+      21. Click on Enhance
+      22. Click on StoryBoard
+      23. Select Purchases > Add logic
+      24. Click on Add
+      25. Open Code Editor > Application Logic
+      26. Paste Joule prompt: "Reward points of each purchase will be one tenth of the purchase value. Each purchase value will be added to the total purchase value of the related customer. Each reward point will be added to the total reward points of the related customer."
+      27. Click on Accept
+
+    - **UI Development (Steps 28-34):**
+      28. Choose StoryBoard
+      29. Select Create a UI application
+      30. Fill UI details: Display name: Purchases, Description: Manage Purchases → Click Next
+      31. Choose Template-Based → Click Next
+      32. Choose List Report Page → Click Next
+      33. Choose main entity as Purchases → Click Finish
+      34. Repeat steps 29-33 for Customers and Redemptions entities with their respective details
+
+    - **Testing & Validation (Step 35):**
+      35. Click Run and Debug button → Test Customers list → Edit/Save functionality → Create new customer → Verify data persistence
+
+  - **Key Learning Outcomes:**
+    - Full-stack app development from template in SAP Build Code
+    - Joule Generative AI for data entity and service auto-generation
+    - Business logic automation with AI-driven code generation
+    - UI template-based application design
+    - End-to-end testing and validation in SAP Build Code environment
+
 **BTP Security & Integration Patterns:**
 - SAP BTP Security Architecture & IAM (XSUAA, IAS)
 - S/4HANA Cloud OData V4 API conventions & released endpoints
