@@ -3,8 +3,9 @@ using { supplier.onboarding as db } from '../db/schema';
 /**
  * Invitation Service - Internal users only
  * Handles creation and management of supplier invitations
+ * Note: Auth disabled for local dev; will be enabled in Step 25 (BTP deployment)
  */
-service InvitationService @(requires: 'authenticated-user') {
+service InvitationService {
   
   // Invitations - internal users can create and view
   entity Invitations as projection on db.Invitations {

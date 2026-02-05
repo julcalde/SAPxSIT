@@ -29,9 +29,7 @@
           "database": "db.sqlite"
         }
       },
-      "auth": {
-        "kind": "mocked"
-      }
+      "auth": "dummy"
     }
   }
 }
