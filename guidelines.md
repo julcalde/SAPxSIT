@@ -321,6 +321,8 @@ The implementation follows this **5-step user journey** with integrated AI promp
 - **Best Practices (MUST READ)** → https://cap.cloud.sap/docs/about/best-practices
 - **Anti Patterns (MUST READ)** → https://cap.cloud.sap/docs/about/bad-practices
 - Cookbook & Guides → https://cap.cloud.sap/docs/guides/
+- Add required services to MTA deployments → https://cap.cloud.sap/docs/guides/using-services#add-required-services-to-mta-deployments
+- Forward authorization token with Node.js → https://cap.cloud.sap/docs/guides/using-services#forward-authorization-token-with-node-js
 - CDS Reference → https://cap.cloud.sap/docs/cds/
 - Node.js Runtime → https://cap.cloud.sap/docs/node.js/
 

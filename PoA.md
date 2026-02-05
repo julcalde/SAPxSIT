@@ -102,10 +102,12 @@ C4Container
 - **Goal**: Fully functional CAP backend testable locally
 
 ### Phase 2: BTP Deployment
-- **Database**: HANA Cloud
+- **Database**: HANA Cloud (HDI-shared service, auto-provisioned via MTA)
 - **Authentication**: XSUAA with proper OAuth2 flows
 - **Destinations**: Configure for S/4HANA, Object Store
-- **Services**: Bind HANA, XSUAA, Destination services
+- **Services**: Auto-bound via mta.yaml (HANA, XSUAA, Destination)
+- **Required services**: `cds add xsuaa,destination,connectivity` (connectivity only if on-premise access is needed)
+- **Deployment**: MTA-based (`mbt build` + `cf deploy`)
 - **Goal**: CAP backend running on BTP with real integrations
 
 ### Phase 3: Frontend Integration
@@ -116,7 +118,7 @@ C4Container
 
 ---
 
-## Implementation Roadmap (24 Steps)
+## Implementation Roadmap (27 Steps)
 
 ### **Foundation (Steps 1-4)**
 1. Initialize CAP project structure with CDS models and services
@@ -156,6 +158,11 @@ C4Container
 23. Write integration tests for end-to-end invitation → submission → S/4 → notification flow
 24. Perform security testing: expired tokens, tampered tokens, unauthorized access
 
+### **BTP Deployment Preparation (Steps 25-27)**
+25. Add required services and generate mta.yaml (`cds add xsuaa,destination,connectivity`)
+26. Configure xs-security.json for XSUAA scopes and role-templates
+27. Test MTA build locally (`mbt build`) and deploy to BTP dev space (`cf deploy`)
+
 ---
 
 ## Technical Stack
@@ -163,12 +170,14 @@ C4Container
 ### Backend (CAP Node.js)
 - **Framework**: @sap/cds ^7
 - **Runtime**: Node.js (LTS)
-- **Database**: SQLite (dev) → HANA Cloud (prod)
+- **Database**: SQLite (dev) → HANA Cloud HDI-shared (prod)
 - **Authentication**: Mock (dev) → XSUAA (prod)
+- **Deployment**: Multi-Target Application (MTA) descriptor
 - **Libraries**: 
   - `jsonwebtoken` for JWT handling
   - `crypto` for secure token generation
   - Custom utilities for S/4HANA & Object Store
+  - `@sap/hdi-deploy` for HANA deployment
 
 ### Frontend (SAP Build Apps)
 - **Internal App**: Invitation management, status dashboard
@@ -180,6 +189,7 @@ C4Container
 - **S/4HANA Cloud**: Business Partner OData V4 API
 - **Object Store**: S3-compatible API (presigned URLs)
 - **Email Service**: SMTP/API (to be determined)
+- **Internal CAP-to-CAP calls**: App-defined destination with `forwardAuthToken: true` when sharing the same XSUAA instance
 
 ---
 
@@ -264,12 +274,13 @@ C4Container
 - [ ] All tests pass (unit + integration)
 
 ### Phase 2 (BTP Deployment) ✅
-- [ ] CAP backend deployed to BTP (cf push)
-- [ ] HANA Cloud connected and accessible
-- [ ] XSUAA authentication working
+- [ ] MTA descriptor (mta.yaml) configured with HANA, XSUAA, Destination services
+- [ ] CAP backend deployed to BTP (`cf deploy`)
+- [ ] HANA Cloud HDI container auto-provisioned and schema deployed
+- [ ] XSUAA authentication working (OAuth2 flows)
 - [ ] Destination service configured for S/4HANA
-- [ ] Real S/4HANA integration tested
-- [ ] Real Object Store integration tested
+- [ ] Real S/4HANA integration tested (OData V4)
+- [ ] Real Object Store integration tested (presigned URLs)
 
 ### Phase 3 (Frontend Integration) ✅
 - [ ] Internal App connects to CAP backend
