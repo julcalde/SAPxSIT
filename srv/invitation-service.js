@@ -14,44 +14,67 @@ module.exports = async function() {
     
     // Validate input
     if (!supplierEmail || !supplierName) {
-      req.error(400, 'supplierEmail and supplierName are required');
+      return req.error(400, 'supplierEmail and supplierName are required');
     }
     
-    // Check for existing active invitation
-    const existingInvitation = await SELECT.one.from(Invitations)
-      .where({ supplierEmail, status: 'PENDING' });
-    
-    if (existingInvitation && new Date(existingInvitation.expiresAt) > new Date()) {
-      req.error(409, `Active invitation already exists for ${supplierEmail}`);
+    // Validate email format
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(supplierEmail)) {
+      return req.error(400, 'Invalid email format');
     }
     
-    // Generate placeholder token (will be JWT in Step 5)
-    const mockToken = `MOCK_TOKEN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    // Sanitize inputs
+    const sanitizedEmail = supplierEmail.trim().toLowerCase();
+    const sanitizedName = supplierName.trim();
     
-    // Create invitation record
-    const result = await INSERT.into(Invitations).entries({
-      supplierEmail,
-      supplierName,
-      token: mockToken,
-      tokenHash: mockToken.substring(0, 64), // Will use SHA-256 in Step 5
-      expiresAt,
-      isUsed: false,
-      status: 'PENDING',
-      createdByUser: req.user?.id || 'system'
-    });
+    if (sanitizedName.length < 2 || sanitizedName.length > 255) {
+      return req.error(400, 'Supplier name must be between 2 and 255 characters');
+    }
     
-    // Retrieve the created invitation with ID
-    const invitation = await SELECT.one.from(Invitations).where({ token: mockToken });
-    
-    console.log(`[InvitationService] Created invitation ID: ${invitation.ID}`);
-    
-    return {
-      invitationID: invitation.ID,
-      invitationURL: `https://supplier-onboarding.example.com/onboard?token=${mockToken}`,
-      token: mockToken,
-      expiresAt: expiresAt.toISOString()
-    };
+    try {
+      // Check for existing active invitation
+      const existingInvitation = await SELECT.one.from(Invitations)
+        .where({ supplierEmail: sanitizedEmail, status: 'PENDING' });
+      
+      if (existingInvitation && new Date(existingInvitation.expiresAt) > new Date()) {
+        return req.error(409, `Active invitation already exists for ${sanitizedEmail}. Expires at ${existingInvitation.expiresAt}`);
+      }
+      
+      // Generate placeholder token (will be JWT in Step 5)
+      const mockToken = `MOCK_TOKEN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+      
+      // Create invitation record
+      const result = await INSERT.into(Invitations).entries({
+        supplierEmail: sanitizedEmail,
+        supplierName: sanitizedName,
+        token: mockToken,
+        tokenHash: mockToken.substring(0, 64), // Will use SHA-256 in Step 5
+        expiresAt,
+        isUsed: false,
+        status: 'PENDING',
+        createdByUser: req.user?.id || 'system'
+      });
+      
+      // Retrieve the created invitation with ID
+      const invitation = await SELECT.one.from(Invitations).where({ token: mockToken });
+      
+      if (!invitation) {
+        return req.error(500, 'Failed to create invitation');
+      }
+      
+      console.log(`[InvitationService] Created invitation ID: ${invitation.ID}`);
+      
+      return {
+        invitationID: invitation.ID,
+        invitationURL: `https://supplier-onboarding.example.com/onboard?token=${mockToken}`,
+        token: mockToken,
+        expiresAt: expiresAt.toISOString()
+      };
+    } catch (error) {
+      console.error('[InvitationService] Error generating invitation:', error);
+      return req.error(500, `Failed to generate invitation: ${error.message}`);
+    }
   });
   
   // READ: Before reading invitations, check expiration
