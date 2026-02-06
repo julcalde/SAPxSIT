@@ -118,50 +118,58 @@ C4Container
 
 ---
 
-## Implementation Roadmap (27 Steps)
+## Implementation Roadmap (28 Steps)
 
-### **Foundation (Steps 1-4)**
+**Updated:** February 6, 2026 - Added Step 8 (Invitation Renewal), renumbered subsequent steps
+
+### **Foundation (Steps 1-4)** ✅ COMPLETED
 1. Initialize CAP project structure with CDS models and services
 2. Define domain model: Invitations, Suppliers, Attachments entities with proper aspects
 3. Create Invitation Service with basic CRUD operations
 4. Create Supplier Service with token-validated endpoints
 
+**Client Requirements Clarified (Feb 6, 2026):**
+- Token expiration: Configurable parameter (no fixed minimum)
+- Completion time: Configurable parameter (business decision)
+- Recovery process: Internal dashboard + manual renewal capability
+
 ### **Security & Token Management (Steps 5-8)**
-5. Implement JWT token generation utility with configurable TTL and signing
+5. Implement JWT token generation utility with **configurable TTL** and signing
 6. Implement JWT token validation middleware with expiration and audience checks
 7. Add single-use token enforcement (mark token as consumed after first use)
-8. Test token lifecycle: generation, validation, expiration, tampering scenarios
+8. **NEW:** Add "Renew Invitation" action for expired/lost tokens (internal users only)
+9. Test token lifecycle: generation, validation, expiration, tampering, renewal scenarios
 
-### **S/4HANA Integration Mock (Steps 9-11)**
-9. Create S/4HANA client mock for Business Partner creation (local testing)
-10. Implement OData V4 request structure for BP creation with CSRF token handling
-11. Test S/4HANA mock: success response, error handling, duplicate detection
+### **S/4HANA Integration Mock (Steps 9-11)** → **Renumbered to Steps 10-12**
+10. Create S/4HANA client mock for Business Partner creation (local testing)
+11. Implement OData V4 request structure for BP creation with CSRF token handling
+12. Test S/4HANA mock: success response, error handling, duplicate detection
 
-### **Object Store Integration Mock (Steps 12-14)**
-12. Create presigned URL generator mock for S3-compatible storage
-13. Implement file upload workflow: request presigned URL → upload → confirm
-14. Test presigned URL lifecycle: generation, expiration, upload simulation
+### **Object Store Integration Mock (Steps 13-15)** → **Renumbered to Steps 13-15**
+13. Create presigned URL generator mock for S3-compatible storage
+14. Implement file upload workflow: request presigned URL → upload → confirm
+15. Test presigned URL lifecycle: generation, expiration, upload simulation
 
-### **Business Logic Implementation (Steps 15-18)**
-15. Implement invitation creation: validate internal user, generate token, store record
-16. Implement supplier data submission: validate token, parse payload, validate fields
-17. Integrate S/4HANA client: submit Business Partner data on supplier submission
-18. Integrate Object Store: generate presigned URLs for attachment uploads
+### **Business Logic Implementation (Steps 16-19)** → **Renumbered to Steps 16-19**
+16. Implement invitation creation: validate internal user, generate token, store record
+17. Implement supplier data submission: validate token, parse payload, validate fields
+18. Integrate S/4HANA client: submit Business Partner data on supplier submission
+19. Integrate Object Store: generate presigned URLs for attachment uploads
 
-### **Status Tracking & Notifications (Steps 19-21)**
-19. Add invitation status tracking: PENDING, IN_PROGRESS, COMPLETED, EXPIRED
-20. Implement status update logic on supplier submission and S/4HANA response
-21. Create notification mock: email internal user on completion
+### **Status Tracking & Notifications (Steps 20-22)** → **Renumbered to Steps 20-22**
+20. Add invitation status tracking: PENDING, IN_PROGRESS, COMPLETED, EXPIRED
+21. Implement status update logic on supplier submission and S/4HANA response
+22. Create notification mock: email internal user on completion
 
-### **Testing & Validation (Steps 22-24)**
-22. Write comprehensive unit tests for token manager and validators
-23. Write integration tests for end-to-end invitation → submission → S/4 → notification flow
-24. Perform security testing: expired tokens, tampered tokens, unauthorized access
+### **Testing & Validation (Steps 23-25)** → **Renumbered to Steps 23-25**
+23. Write comprehensive unit tests for token manager and validators
+24. Write integration tests for end-to-end invitation → submission → S/4 → notification flow
+25. Perform security testing: expired tokens, tampered tokens, unauthorized access
 
-### **BTP Deployment Preparation (Steps 25-27)**
-25. Add required services and generate mta.yaml (`cds add xsuaa,destination,connectivity`)
-26. Configure xs-security.json for XSUAA scopes and role-templates
-27. Test MTA build locally (`mbt build`) and deploy to BTP dev space (`cf deploy`)
+### **BTP Deployment Preparation (Steps 26-28)** → **Renumbered to Steps 26-28**
+26. Add required services and generate mta.yaml (`cds add xsuaa,destination,connectivity`)
+27. Configure xs-security.json for XSUAA scopes and role-templates
+28. Test MTA build locally (`mbt build`) and deploy to BTP dev space (`cf deploy`)
 
 ---
 
@@ -195,7 +203,19 @@ C4Container
 
 ## Security Architecture
 
-### Token-Based Authentication
+### Token-Based Authentication (Updated Feb 6, 2026)
+
+**Configuration Parameters:**
+- `TOKEN_TTL`: Configurable expiration time (default: 15 minutes for production, 7 days for development)
+- `TOKEN_SECRET`: JWT signing secret (environment variable)
+- `TOKEN_AUDIENCE`: Validation audience (default: "supplier-onboarding")
+
+**Invitation Recovery Process:**
+- Expired invitations remain in database with status "EXPIRED"
+- Internal users can renew expired invitations via "Renew Invitation" action
+- Renewal generates new token with fresh expiration
+- Original invitation ID preserved for audit trail
+- Dashboard shows all invitation statuses for monitoring
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ Invitation Generation (Internal User)                       │

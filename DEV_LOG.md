@@ -138,6 +138,29 @@
 
 ---
 
+### Client Requirements Clarification
+
+**Questions Asked:**
+1. Minimum token expiration time for external users with sensitive data?
+2. Expected average supplier completion time?
+3. Recovery process for expired/lost tokens?
+
+**Client Response:**
+1. **Token TTL:** Configurable parameter (no fixed requirement)
+2. **Completion Time:** Configurable parameter (no fixed requirement)
+3. **Recovery Process:** 
+   - Internal dashboard showing invitation status
+   - Manual renewal capability from internal side after expiration
+   - Internal user can regenerate invitation link for same supplier
+
+**Impact on Implementation:**
+- Add configuration parameter for token TTL (default: 15 minutes, configurable)
+- Add "Renew Invitation" action to InvitationService (internal users only)
+- Future: Dashboard UI to show invitation status (PENDING, EXPIRED, COMPLETED)
+- Expired invitations can be renewed by internal users (generates new token)
+
+---
+
 **Session Status:** ✅ Steps 1-4 Fully Validated  
-**Ready to Proceed:** Step 5 - JWT Token Implementation  
+**Ready to Proceed:** Step 5 - JWT Token Implementation (with configurable TTL)  
 **Blocker:** None
