@@ -2,11 +2,6 @@
 
 ## Security & Authentication
 
-**Q1: Session Timeout (TTL)** ⏳ PENDING
-- What are the required **idle** and **absolute** session timeout values for external suppliers?
-- Is there a **minimum allowed expiration time** in your sector for sensitive data access?
-- **TTL = Time To Live:** How long a session/token remains valid before re-login required
-
 **Q2: Session Binding Controls** ⏳ PENDING
 - Do we need IP binding or device fingerprinting for external supplier sessions?
 
@@ -51,17 +46,11 @@
 
 ## Operational & Recovery
 
-**Q13: OTP Failure Recovery** ⏳ PENDING
-- What is the recovery flow after OTP failures, token expiration, or involuntary session loss?
-
 **Q14: Re‑Invitation Policy** ⏳ PENDING
 - Should the system auto‑reissue invitations or require manual re‑invite?
 
 **Q15: SLAs & Lockout Windows** ⏳ PENDING
 - Any SLA targets for onboarding completion or lockout duration?
-
-**Q16: Expected Completion Time** ⏳ PENDING
-- What is the expected average time for a supplier to complete onboarding?
 
 ## Testing & Environments
 
