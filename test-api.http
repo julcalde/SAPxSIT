@@ -1,0 +1,249 @@
+###
+# Supplier Onboarding - REST API Tests
+# Use with REST Client extension in BAS
+# Base URL: http://localhost:4004
+###
+
+@baseUrl = http://localhost:4004
+@token = MOCK_TOKEN_REPLACE_ME
+
+### Test 1: Generate Invitation (Happy Path)
+POST {{baseUrl}}/odata/v4/invitation/generateInvitation
+Content-Type: application/json
+
+{
+  "supplierEmail": "test.supplier@acme.com",
+  "supplierName": "ACME Corporation"
+}
+
+### Test 2: Generate Invitation with Invalid Email
+POST {{baseUrl}}/odata/v4/invitation/generateInvitation
+Content-Type: application/json
+
+{
+  "supplierEmail": "invalid-email",
+  "supplierName": "Test Company"
+}
+
+### Test 3: Generate Duplicate Invitation
+POST {{baseUrl}}/odata/v4/invitation/generateInvitation
+Content-Type: application/json
+
+{
+  "supplierEmail": "test.supplier@acme.com",
+  "supplierName": "ACME Corporation"
+}
+
+### Test 4: Get All Invitations
+GET {{baseUrl}}/odata/v4/invitation/Invitations
+
+### Test 5: Get Single Invitation by ID
+# Replace with actual ID from Test 1 response
+GET {{baseUrl}}/odata/v4/invitation/Invitations/REPLACE_WITH_ID
+
+### Test 6: Submit Supplier Data (Happy Path)
+# IMPORTANT: Replace {{token}} with actual token from Test 1 response
+POST {{baseUrl}}/odata/v4/supplier/submitData
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "companyData": {
+    "companyName": "ACME Corporation",
+    "legalForm": "GmbH",
+    "taxID": "DE123456789",
+    "vatID": "DE999999999",
+    "street": "Main Street 123",
+    "city": "Berlin",
+    "postalCode": "10115",
+    "country": "DEU",
+    "email": "contact@acme.com",
+    "phone": "+49 30 12345678",
+    "website": "https://acme.com",
+    "bankName": "Deutsche Bank",
+    "iban": "DE89370400440532013000",
+    "swiftCode": "COBADEFF",
+    "commodityCodes": "10.11.12, 20.30.40",
+    "certifications": "ISO 9001, ISO 14001"
+  }
+}
+
+### Test 7: Submit with Used Token (Should Fail)
+POST {{baseUrl}}/odata/v4/supplier/submitData
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "companyData": {
+    "companyName": "ACME Corporation",
+    "legalForm": "GmbH",
+    "taxID": "DE123456789",
+    "vatID": "DE999999999",
+    "street": "Main Street 123",
+    "city": "Berlin",
+    "postalCode": "10115",
+    "country": "DEU",
+    "email": "contact@acme.com",
+    "phone": "+49 30 12345678",
+    "website": "https://acme.com",
+    "bankName": "Deutsche Bank",
+    "iban": "DE89370400440532013000",
+    "swiftCode": "COBADEFF",
+    "commodityCodes": "10.11.12",
+    "certifications": "ISO 9001"
+  }
+}
+
+### Test 8: Submit with Invalid Token
+POST {{baseUrl}}/odata/v4/supplier/submitData
+Content-Type: application/json
+
+{
+  "token": "INVALID_TOKEN_123",
+  "companyData": {
+    "companyName": "Test Company",
+    "legalForm": "GmbH",
+    "taxID": "DE987654321",
+    "vatID": "DE888888888",
+    "street": "Test Street 1",
+    "city": "Munich",
+    "postalCode": "80331",
+    "country": "DEU",
+    "email": "test@test.com",
+    "phone": "+49 89 12345678",
+    "website": "https://test.com",
+    "bankName": "Test Bank",
+    "iban": "DE89370400440532013000",
+    "swiftCode": "COBADEFF",
+    "commodityCodes": "",
+    "certifications": ""
+  }
+}
+
+### Test 9: Submit with Missing Required Fields
+POST {{baseUrl}}/odata/v4/supplier/submitData
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "companyData": {
+    "companyName": "Incomplete Corp"
+  }
+}
+
+### Test 10: Submit with Invalid Email Format
+POST {{baseUrl}}/odata/v4/supplier/submitData
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "companyData": {
+    "companyName": "Test Corp",
+    "legalForm": "GmbH",
+    "taxID": "DE123456789",
+    "vatID": "DE999999999",
+    "street": "Street 1",
+    "city": "Berlin",
+    "postalCode": "10115",
+    "country": "DEU",
+    "email": "invalid-email-format",
+    "phone": "+49 30 12345678",
+    "website": "https://test.com",
+    "bankName": "Test Bank",
+    "iban": "DE89370400440532013000",
+    "swiftCode": "COBADEFF",
+    "commodityCodes": "",
+    "certifications": ""
+  }
+}
+
+### Test 11: Submit with Invalid Country Code
+POST {{baseUrl}}/odata/v4/supplier/submitData
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "companyData": {
+    "companyName": "Test Corp",
+    "legalForm": "GmbH",
+    "taxID": "DE123456789",
+    "vatID": "DE999999999",
+    "street": "Street 1",
+    "city": "Berlin",
+    "postalCode": "10115",
+    "country": "GERMANY",
+    "email": "test@test.com",
+    "phone": "+49 30 12345678",
+    "website": "https://test.com",
+    "bankName": "Test Bank",
+    "iban": "DE89370400440532013000",
+    "swiftCode": "COBADEFF",
+    "commodityCodes": "",
+    "certifications": ""
+  }
+}
+
+### Test 12: Submit with Invalid IBAN Format
+POST {{baseUrl}}/odata/v4/supplier/submitData
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "companyData": {
+    "companyName": "Test Corp",
+    "legalForm": "GmbH",
+    "taxID": "DE123456789",
+    "vatID": "DE999999999",
+    "street": "Street 1",
+    "city": "Berlin",
+    "postalCode": "10115",
+    "country": "DEU",
+    "email": "test@test.com",
+    "phone": "+49 30 12345678",
+    "website": "https://test.com",
+    "bankName": "Test Bank",
+    "iban": "INVALID-IBAN",
+    "swiftCode": "COBADEFF",
+    "commodityCodes": "",
+    "certifications": ""
+  }
+}
+
+### Test 13: Get All Suppliers
+GET {{baseUrl}}/odata/v4/supplier/Suppliers
+
+### Test 14: Request Presigned Upload URL
+POST {{baseUrl}}/odata/v4/supplier/requestUploadURL
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "fileName": "company-certificate.pdf",
+  "fileType": "application/pdf",
+  "fileSize": 2048576
+}
+
+### Test 15: Request Upload URL - File Too Large
+POST {{baseUrl}}/odata/v4/supplier/requestUploadURL
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "fileName": "huge-file.pdf",
+  "fileType": "application/pdf",
+  "fileSize": 20971520
+}
+
+### Test 16: Request Upload URL - Invalid File Type
+POST {{baseUrl}}/odata/v4/supplier/requestUploadURL
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "fileName": "malware.exe",
+  "fileType": "application/x-msdownload",
+  "fileSize": 1024
+}
+
+### Test 17: Get All Attachments
+GET {{baseUrl}}/odata/v4/supplier/Attachments
