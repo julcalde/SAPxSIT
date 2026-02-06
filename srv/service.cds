@@ -26,6 +26,7 @@ service accessPageExternalSrv {
   
   entity Purchases as projection on my.Purchases {
     ID,
+    orderId,
     quantity,
     date,
     product
@@ -34,11 +35,14 @@ service accessPageExternalSrv {
   entity Mangel as projection on my.Mangel {
     istQuantity,
     differenceQuantity,
+    purchase,
+    product,
     ConfirmedQuantity
   };
 
   entity Tokens as projection on my.Tokens {
     token,
+    orderID,
     expires_at,
     revoked,
     lastUsed_at,
