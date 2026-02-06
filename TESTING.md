@@ -22,18 +22,20 @@ cds watch
 [cds] - server listening on { url: 'http://localhost:4004' }
 ```
 
-### 2. Get the Exposed URL
+### 2. Important: Use localhost for curl in BAS
 
-**BAS will show notification:** `"A service is listening to port 4004"`
-
-**Click:** "Expose and Open"
-
-**Copy the URL from browser** (looks like):
+**Since you're running curl INSIDE BAS terminal, use:**
 ```
-https://port4004-workspaces-ws-xxxxx.us10.trial.applicationstudio.cloud.sap
+http://localhost:4004
 ```
 
-**👉 Replace `{EXPOSED_URL}` in all commands below with this URL**
+**The exposed URL (https://port4004-...) is only for:**
+- Opening in your **browser** (outside BAS)
+- External tools like Postman
+
+**👉 In all curl commands below, use `http://localhost:4004`**
+
+**Note:** The exposed URL shows 401 Unauthorized for curl because it expects browser-based authentication.
 
 ---
 
@@ -47,7 +49,7 @@ https://port4004-workspaces-ws-xxxxx.us10.trial.applicationstudio.cloud.sap
 
 **Command:**
 ```bash
-curl -X POST {EXPOSED_URL}/odata/v4/invitation/generateInvitation \
+curl -X POST http://localhost:4004/odata/v4/invitation/generateInvitation \
   -H "Content-Type: application/json" \
   -d '{
     "supplierEmail": "supplier@acme.com",
@@ -81,7 +83,7 @@ curl -X POST {EXPOSED_URL}/odata/v4/invitation/generateInvitation \
 
 **Command:**
 ```bash
-curl -X GET {EXPOSED_URL}/odata/v4/invitation/Invitations
+curl -X GET http://localhost:4004/odata/v4/invitation/Invitations
 ```
 
 **Expected Response:**
@@ -118,7 +120,7 @@ curl -X GET {EXPOSED_URL}/odata/v4/invitation/Invitations
 
 **Command:**
 ```bash
-curl -X POST {EXPOSED_URL}/odata/v4/supplier/submitData \
+curl -X POST http://localhost:4004/odata/v4/supplier/submitData \
   -H "Content-Type: application/json" \
   -d '{
     "token": "YOUR_TOKEN_HERE",
@@ -171,7 +173,7 @@ curl -X POST {EXPOSED_URL}/odata/v4/supplier/submitData \
 
 **Command:**
 ```bash
-curl -X GET {EXPOSED_URL}/odata/v4/invitation/Invitations
+curl -X GET http://localhost:4004/odata/v4/invitation/Invitations
 ```
 
 **Expected Response:**
@@ -204,7 +206,7 @@ curl -X GET {EXPOSED_URL}/odata/v4/invitation/Invitations
 
 **Command:** (Use same token from Test 3 again)
 ```bash
-curl -X POST {EXPOSED_URL}/odata/v4/supplier/submitData \
+curl -X POST http://localhost:4004/odata/v4/supplier/submitData \
   -H "Content-Type: application/json" \
   -d '{
     "token": "YOUR_TOKEN_HERE",
@@ -251,7 +253,7 @@ curl -X POST {EXPOSED_URL}/odata/v4/supplier/submitData \
 
 **Command:**
 ```bash
-curl -X POST {EXPOSED_URL}/odata/v4/supplier/submitData \
+curl -X POST http://localhost:4004/odata/v4/supplier/submitData \
   -H "Content-Type: application/json" \
   -d '{
     "token": "INVALID_TOKEN_123",
@@ -300,7 +302,7 @@ curl -X POST {EXPOSED_URL}/odata/v4/supplier/submitData \
 
 **Command:**
 ```bash
-curl -X POST {EXPOSED_URL}/odata/v4/invitation/generateInvitation \
+curl -X POST http://localhost:4004/odata/v4/invitation/generateInvitation \
   -H "Content-Type: application/json" \
   -d '{
     "supplierEmail": "invalid-email-format",
@@ -330,7 +332,7 @@ curl -X POST {EXPOSED_URL}/odata/v4/invitation/generateInvitation \
 
 **Command:** (Use same email from Test 1 - must create a new invitation first if expired)
 ```bash
-curl -X POST {EXPOSED_URL}/odata/v4/invitation/generateInvitation \
+curl -X POST http://localhost:4004/odata/v4/invitation/generateInvitation \
   -H "Content-Type: application/json" \
   -d '{
     "supplierEmail": "supplier@acme.com",
@@ -361,7 +363,7 @@ curl -X POST {EXPOSED_URL}/odata/v4/invitation/generateInvitation \
 **Command:**
 ```bash
 # Generate fresh token first
-curl -X POST {EXPOSED_URL}/odata/v4/invitation/generateInvitation \
+curl -X POST http://localhost:4004/odata/v4/invitation/generateInvitation \
   -H "Content-Type: application/json" \
   -d '{
     "supplierEmail": "test2@acme.com",
@@ -369,7 +371,7 @@ curl -X POST {EXPOSED_URL}/odata/v4/invitation/generateInvitation \
   }'
 
 # Copy new token, then submit incomplete data
-curl -X POST {EXPOSED_URL}/odata/v4/supplier/submitData \
+curl -X POST http://localhost:4004/odata/v4/supplier/submitData \
   -H "Content-Type: application/json" \
   -d '{
     "token": "NEW_TOKEN_HERE",
@@ -401,7 +403,7 @@ curl -X POST {EXPOSED_URL}/odata/v4/supplier/submitData \
 
 **Command:**
 ```bash
-curl -X POST {EXPOSED_URL}/odata/v4/supplier/submitData \
+curl -X POST http://localhost:4004/odata/v4/supplier/submitData \
   -H "Content-Type: application/json" \
   -d '{
     "token": "YOUR_VALID_TOKEN_HERE",
@@ -448,7 +450,7 @@ curl -X POST {EXPOSED_URL}/odata/v4/supplier/submitData \
 
 **Command:**
 ```bash
-curl -X POST {EXPOSED_URL}/odata/v4/supplier/submitData \
+curl -X POST http://localhost:4004/odata/v4/supplier/submitData \
   -H "Content-Type: application/json" \
   -d '{
     "token": "YOUR_VALID_TOKEN_HERE",
@@ -495,7 +497,7 @@ curl -X POST {EXPOSED_URL}/odata/v4/supplier/submitData \
 
 **Command:**
 ```bash
-curl -X POST {EXPOSED_URL}/odata/v4/supplier/requestUploadURL \
+curl -X POST http://localhost:4004/odata/v4/supplier/requestUploadURL \
   -H "Content-Type: application/json" \
   -d '{
     "token": "YOUR_VALID_TOKEN_HERE",
@@ -527,7 +529,7 @@ curl -X POST {EXPOSED_URL}/odata/v4/supplier/requestUploadURL \
 
 **Command:**
 ```bash
-curl -X POST {EXPOSED_URL}/odata/v4/supplier/requestUploadURL \
+curl -X POST http://localhost:4004/odata/v4/supplier/requestUploadURL \
   -H "Content-Type: application/json" \
   -d '{
     "token": "YOUR_VALID_TOKEN_HERE",
@@ -559,7 +561,7 @@ curl -X POST {EXPOSED_URL}/odata/v4/supplier/requestUploadURL \
 
 **Command:**
 ```bash
-curl -X POST {EXPOSED_URL}/odata/v4/supplier/requestUploadURL \
+curl -X POST http://localhost:4004/odata/v4/supplier/requestUploadURL \
   -H "Content-Type: application/json" \
   -d '{
     "token": "YOUR_VALID_TOKEN_HERE",
