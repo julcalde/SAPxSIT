@@ -22,54 +22,58 @@ cds watch
 
 ---
 
-## Test Flow:
+## 🎯 Testing Method: Use Terminal Commands!
 
-### 1️⃣ CREATE INVITATION
-**Path:** InvitationService → generateInvitation
+**The browser page only shows OData entities, not custom actions.**
 
-**Input:**
-- Email: `supplier@acme.com`
-- Name: `ACME Corp`
+**👉 Use the curl commands instead!** See **[TEST_WITH_CURL.md](TEST_WITH_CURL.md)**
 
-**Expected:** Token returned (copy it!)
+### Quick Commands:
+
+**In a NEW terminal** (keep `cds watch` running):
+
+**1️⃣ CREATE INVITATION:**
+```bash
+curl -X POST http://localhost:4004/odata/v4/invitation/generateInvitation \
+  -H "Content-Type: application/json" \
+  -d '{"supplierEmail": "supplier@acme.com", "supplierName": "ACME Corp"}'
+```
+👉 **COPY THE TOKEN from response!**
 
 ---
 
-### 2️⃣ SUBMIT DATA
-**Path:** SupplierService → submitData
-
-**Paste token + this data:**
-```json
-{
-  "companyName": "ACME Corporation",
-  "legalForm": "GmbH",
-  "taxID": "DE123456789",
-  "vatID": "DE999999999",
-  "street": "Main Street 123",
-  "city": "Berlin",
-  "postalCode": "10115",
-  "country": "DEU",
-  "email": "contact@acme.com",
-  "phone": "+49 30 12345678",
-  "website": "https://acme.com",
-  "bankName": "Deutsche Bank",
-  "iban": "DE89370400440532013000",
-  "swiftCode": "COBADEFF",
-  "commodityCodes": "10.11.12",
-  "certifications": "ISO 9001"
-}
+**2️⃣ SUBMIT DATA** (replace `YOUR_TOKEN_HERE`):
+```bash
+curl -X POST http://localhost:4004/odata/v4/supplier/submitData \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "YOUR_TOKEN_HERE",
+    "companyData": {
+      "companyName": "ACME Corporation",
+      "legalForm": "GmbH",
+      "taxID": "DE123456789",
+      "vatID": "DE999999999",
+      "street": "Main Street 123",
+      "city": "Berlin",
+      "postalCode": "10115",
+      "country": "DEU",
+      "email": "contact@acme.com",
+      "phone": "+49 30 12345678",
+      "website": "https://acme.com",
+      "bankName": "Deutsche Bank",
+      "iban": "DE89370400440532013000",
+      "swiftCode": "COBADEFF",
+      "commodityCodes": "10.11.12",
+      "certifications": "ISO 9001"
+    }
+  }'
 ```
 
-**Expected:** `"success": true`
-
 ---
 
-### 3️⃣ VERIFY
-**Path:** InvitationService → Invitations → Click "Go"
-
-**Expected:**
-- `status`: "COMPLETED"
-- `isUsed`: true
+**3️⃣ VERIFY in Browser:**
+- Refresh the **Invitations** page in browser
+- Check: `status` = "COMPLETED", `isUsed` = true
 
 ---
 
