@@ -35,12 +35,4 @@ service accessPageExternalSrv {
     lastUsed_at,
     linkInUse
   };
-
-  type VerifyResponse {
-    success: Boolean;
-    orderID: UUID;
-    message: String;
-  };
-
-  action verifyToken(token: String) returns VerifyResponse;
 }
