@@ -7,26 +7,23 @@ module.exports = cds.service.impl(function() {
   const { Purchases } = this.entities;
 
   // Validate JWT session token on all requests
-  this.before('*', async (req) => {
-    // Skip for non-authenticated requests (if any)
-    if (req.user && req.user.id) {
-      return; // Already authenticated
-    }
-
-    // Look for JWT in Authorization header (Bearer token)
+  this.before('*', (req) => {
     const authHeader = req.headers['authorization'];
-    if (!authHeader) {
-      return req.error(401, 'Authorization header missing.');
+    
+    // Only process if Bearer token is present
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return; // No JWT, let other auth handlers deal with it
     }
 
-    const token = authHeader.replace('Bearer ', '');
+    const token = authHeader.substring('Bearer '.length);
     if (!token) {
-      return req.error(401, 'Invalid authorization format.');
+      return req.reject(401, 'Invalid Bearer token format.');
     }
 
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      // Attach order context to request for downstream handlers
+      console.log('[JWT] Verified token for orderID:', decoded.orderID);
+      // Set user context from JWT
       req.user = {
         id: decoded.orderID,
         type: 'delivery-external',
@@ -34,22 +31,22 @@ module.exports = cds.service.impl(function() {
         tokenID: decoded.tokenID
       };
     } catch (err) {
-      return req.error(401, `Invalid or expired token: ${err.message}`);
+      console.error('[JWT] Verification failed:', err.message);
+      return req.reject(401, `Invalid or expired token: ${err.message}`);
     }
   });
 
-  this.before('READ', Purchases, async (req) => {
+  this.before('READ', Purchases, (req) => {
+    console.log('[READ] req.user:', req.user);
     // Ensure user only accesses data for their order
     if (!req.user || !req.user.orderID) {
-      return req.error(403, 'Access denied.');
+      return req.reject(403, 'Access denied - no valid JWT.');
     }
-    // Optionally filter by orderID automatically
-    // req.query.where([{ ref: ['orderId_ID'] }, '=', { val: req.user.orderID }]);
   });
 
-  this.before('UPDATE', Purchases, async (req) => {
+  this.before('UPDATE', Purchases, (req) => {
     if (!req.user || !req.user.orderID) {
-      return req.error(403, 'Access denied.');
+      return req.reject(403, 'Access denied - no valid JWT.');
     }
   });
 });
