@@ -1,67 +1,52 @@
 const cds = require('@sap/cds');
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 module.exports = cds.service.impl(function() {
   const { Purchases } = this.entities;
 
-  this.before('READ', Purchases, async (req) => {
-    const token = req.headers['authorization-token'];
-    // Verify token and restrict access to the associated order
-    const purchase = await cds.transaction(req).run(
-      SELECT.one.from(Purchases).where({ token })
-    );
-    if (!purchase) {
-      req.reject(403, 'Invalid token or access denied');
+  // Validate JWT session token on all requests
+  this.before('*', (req) => {
+    const authHeader = req.headers['authorization'];
+    
+    // Only process if Bearer token is present
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return; // No JWT, let other auth handlers deal with it
     }
-  });
 
-  this.before('UPDATE', Purchases, async (req) => {
-    const token = req.headers['authorization-token'];
-    // Verify token before allowing update
-    const purchase = await cds.transaction(req).run(
-      SELECT.one.from(Purchases).where({ token })
-    );
-    if (!purchase) {
-      req.reject(403, 'Invalid token or access denied');
+    const token = authHeader.substring('Bearer '.length);
+    if (!token) {
+      return req.reject(401, 'Invalid Bearer token format.');
     }
-  });
-
-  this.on('verifyToken', async (req) => {
-    // accept token from body, query, params or raw express req
-    const token = (req.data && req.data.token)
-      || (req.query && req.query.token)
-      || (req.params && req.params.token)
-      || (req._ && req._.req && req._.req.query && req._.req.query.token);
-
-    if (!token) return req.error(400, 'Token is required.');
 
     try {
-      const tokenRecord = await cds.run(
-        SELECT.one.from('AccessPage.Tokens').where({ token })
-      );
-
-      if (!tokenRecord) return req.error(404, 'Token not found.');
-      if (tokenRecord.revoked) return req.error(403, 'Token has been revoked.');
-
-      const now = new Date();
-      if (tokenRecord.expires_at && new Date(tokenRecord.expires_at) < now) {
-        return req.error(403, 'Token has expired.');
-      }
-
-      await cds.run(
-        UPDATE('AccessPage.Tokens', tokenRecord.ID).set({
-          linkInUse: true,
-          lastUsed_at: now
-        })
-      );
-
-      return {
-        success: true,
-        orderID: tokenRecord.orderID_ID,
-        message: 'Token verified and marked as used'
+      const decoded = jwt.verify(token, JWT_SECRET);
+      console.log('[JWT] Verified token for orderID:', decoded.orderID);
+      // Set user context from JWT
+      req.user = {
+        id: decoded.orderID,
+        type: 'delivery-external',
+        orderID: decoded.orderID,
+        tokenID: decoded.tokenID
       };
     } catch (err) {
-      console.error('verifyToken error (external):', err);
-      return req.error(500, 'Token verification failed: ' + err.message);
+      console.error('[JWT] Verification failed:', err.message);
+      return req.reject(401, `Invalid or expired token: ${err.message}`);
+    }
+  });
+
+  this.before('READ', Purchases, (req) => {
+    console.log('[READ] req.user:', req.user);
+    // Ensure user only accesses data for their order
+    if (!req.user || !req.user.orderID) {
+      return req.reject(403, 'Access denied - no valid JWT.');
+    }
+  });
+
+  this.before('UPDATE', Purchases, (req) => {
+    if (!req.user || !req.user.orderID) {
+      return req.reject(403, 'Access denied - no valid JWT.');
     }
   });
 });

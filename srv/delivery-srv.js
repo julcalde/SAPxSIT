@@ -5,6 +5,7 @@ const nodemailer = require("nodemailer");
 const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
+const { generatePublicUrl } = require('./deliveryPublicURL-srv');
 
 module.exports = cds.service.impl(function () {
   // Gmail transporter configuration

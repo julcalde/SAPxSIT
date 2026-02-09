@@ -1,7 +1,6 @@
 using { AccessPage as my } from '../db/schema.cds';
 
 @path: '/service/accessPageExternal'
-@requires: 'token-authenticated'
 service accessPageExternalSrv {
   entity Products as projection on my.Products {
     ID,
@@ -35,12 +34,4 @@ service accessPageExternalSrv {
     lastUsed_at,
     linkInUse
   };
-
-  type VerifyResponse {
-    success: Boolean;
-    orderID: UUID;
-    message: String;
-  };
-
-  action verifyToken(token: String) returns VerifyResponse;
 }
