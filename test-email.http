@@ -1,0 +1,18 @@
+### Test linkGeneration action
+POST http://localhost:4004/service/delivery/linkGeneration
+Content-Type: application/json
+
+{
+  "orderID": "c49876b8-cc78-4dd4-9136-f65c1f8c5982"
+}
+
+### Alternative - Test with different Order ID
+POST http://localhost:4004/service/delivery/linkGeneration
+Content-Type: application/json
+
+{
+  "orderID": "7401a3f7-835f-4536-aa10-76b6805173bd"
+}
+
+### Get available Orders first (to find real Order IDs)
+GET http://localhost:4004/service/delivery/Order

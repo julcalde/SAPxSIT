@@ -10,8 +10,10 @@
         "@sap/low-code-event-handler": "^1.2.5",
         "@sap/xsenv": ">=3.3.2 <3.3.3",
         "@sap/xssec": "^4.12.2",
+        "dotenv": "^17.2.4",
         "express": "^4",
         "hdb": "^2.27.1",
+        "nodemailer": "^8.0.1",
         "passport": "^0.7.0"
     },
     "devDependencies": {

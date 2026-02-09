@@ -4,14 +4,13 @@ Welcome to your new project.
 
 It contains these folders and files, following our recommended project layout:
 
-File or Folder | Purpose
----------|----------
-`app/` | content for UI frontends goes here
-`db/` | your domain models and data go here
-`srv/` | your service models and code go here
-`package.json` | project metadata and configuration
-`readme.md` | this getting started guide
-
+| File or Folder   | Purpose                              |
+| ---------------- | ------------------------------------ |
+| `app/`         | content for UI frontends goes here   |
+| `db/`          | your domain models and data go here  |
+| `srv/`         | your service models and code go here |
+| `package.json` | project metadata and configuration   |
+| `readme.md`    | this getting started guide           |
 
 ## Next Steps
 
@@ -19,7 +18,24 @@ File or Folder | Purpose
 - (in VS Code simply choose _**Terminal** > Run Task > cds watch_)
 - Start adding content, for example, a [db/schema.cds](db/schema.cds).
 
-
 ## Learn More
 
 Learn more at https://cap.cloud.sap/docs/get-started/.
+
+Mail service
+npm install nodemailer
+
+npm install nodemailer dotenv
+
+
+Test emails
+
+cds serve all --with-mocks --in-memory
+
+
+
+curl-XPOSThttp://localhost:4004/service/delivery/linkGeneration\
+
+-H"Content-Type: application/json"\
+
+-d'{"orderID": "c49876b8-cc78-4dd4-9136-f65c1f8c5982"}'
