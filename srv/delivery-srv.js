@@ -1,6 +1,7 @@
 const cds = require('@sap/cds');
 const crypto = require('crypto');
 const { randomUUID } = require('crypto');
+const { generatePublicUrl } = require('./deliveryPublicURL-srv');
 
 module.exports = cds.service.impl(function () {
   this.on('linkGeneration', async (req) => {
@@ -25,10 +26,13 @@ module.exports = cds.service.impl(function () {
         )
       );
 
-      // Build the URL dynamically from request host (external verify endpoint)
-      const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
-      const host = req.headers['x-forwarded-host'] || req.headers['host'] || 'localhost:4004';
-      const verifyUrl = `${protocol}://${host}/service/accessPageExternal/verifyToken?token=${token}`;
+      // // Build the URL dynamically from request host (external verify endpoint)
+      // const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+      // const host = req.headers['x-forwarded-host'] || req.headers['host'] || 'localhost:4004';
+      // const verifyUrl = `${protocol}://${host}/service/accessPageExternal/verifyToken?token=${token}`;
+
+      // Generate public-accessible URL using deliveryPublicURL service
+      const verifyUrl = generatePublicUrl(req, token);
 
       return {
         token,
