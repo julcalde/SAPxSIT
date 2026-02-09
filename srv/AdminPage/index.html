@@ -12,9 +12,206 @@
         <!-- Header -->
         <div class="bg-white shadow rounded-lg p-6 mb-6">
           <h1 class="text-3xl font-bold text-gray-900">Supplier Management</h1>
-          <p class="mt-2 text-sm text-gray-600">
-            Manage suppliers and send delivery verification links
-          </p>
+        </div>
+
+        <!-- Suppliers Table -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Supplier Name
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+              </tr>
+            </thead>
+            <tbody id="suppliersTableBody" class="bg-white divide-y divide-gray-200">
+              <tr class="hover:bg-gray-50 cursor-pointer" onclick="toggleAccordion(this, 'supplier-001')">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  Müller & Co.
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  SUP-001
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  kontakt@mueller-co.de
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                  <svg class="arrow-icon h-5 w-5 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                  </svg>
+                </td>
+              </tr>
+              <tr id="supplier-001" class="hidden">
+                <td colspan="4" class="px-6 py-4">
+                  <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Uploaded Documents</h3>
+                    <table class="min-w-full divide-y divide-gray-300">
+                      <thead class="bg-gray-100">
+                        <tr>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">File Name</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">File Type</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Created At</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                          <td class="px-4 py-3 text-sm text-gray-900">invoice_2026_001.pdf</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">PDF</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">01.02.2026 14:23</td>
+                          <td class="px-4 py-3 text-sm">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Approved</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-3 text-sm text-gray-900">delivery_note_001.pdf</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">PDF</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">31.01.2026 09:15</td>
+                          <td class="px-4 py-3 text-sm">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Pending</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-3 text-sm text-gray-900">image_001.jpg</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">JPG</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">30.01.2026 08:00</td>
+                          <td class="px-4 py-3 text-sm">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Edit</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-gray-50 cursor-pointer" onclick="toggleAccordion(this, 'supplier-002')">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  Schmidt Großhandel
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  SUP-002
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  info@schmidt-handel.de
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                  <svg class="arrow-icon h-5 w-5 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                  </svg>
+                </td>
+              </tr>
+              <tr id="supplier-002" class="hidden">
+                <td colspan="4" class="px-6 py-4">
+                  <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Uploaded Documents</h3>
+                    <table class="min-w-full divide-y divide-gray-300">
+                      <thead class="bg-gray-100">
+                        <tr>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">File Name</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">File Type</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Created At</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                          <td class="px-4 py-3 text-sm text-gray-900">order_confirmation.pdf</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">PDF</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">30.01.2026 10:45</td>
+                          <td class="px-4 py-3 text-sm">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Approved</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-3 text-sm text-gray-900">shipping_label.pdf</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">PDF</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">28.01.2026 15:32</td>
+                          <td class="px-4 py-3 text-sm">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Pending</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-3 text-sm text-gray-900">note.txt</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">TXT</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">27.01.2026 12:10</td>
+                          <td class="px-4 py-3 text-sm">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Edit</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-gray-50 cursor-pointer" onclick="toggleAccordion(this, 'supplier-003')">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  Weber International
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  SUP-003
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  support@weber-intl.com
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                  <svg class="arrow-icon h-5 w-5 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                  </svg>
+                </td>
+              </tr>
+              <tr id="supplier-003" class="hidden">
+                <td colspan="4" class="px-6 py-4">
+                  <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Uploaded Documents</h3>
+                    <table class="min-w-full divide-y divide-gray-300">
+                      <thead class="bg-gray-100">
+                        <tr>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">File Name</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">File Type</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Created At</th>
+                          <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                          <td class="px-4 py-3 text-sm text-gray-900">contract_2026.pdf</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">PDF</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">25.01.2026 11:20</td>
+                          <td class="px-4 py-3 text-sm">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Approved</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-3 text-sm text-gray-900">quality_cert.pdf</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">PDF</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">22.01.2026 08:05</td>
+                          <td class="px-4 py-3 text-sm">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Approved</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-3 text-sm text-gray-900">manual_v1.pdf</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">PDF</td>
+                          <td class="px-4 py-3 text-sm text-gray-600">20.01.2026 09:40</td>
+                          <td class="px-4 py-3 text-sm">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Pending</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Loading Indicator -->
@@ -43,51 +240,7 @@
           <span class="block sm:inline" id="successText"></span>
         </div>
 
-        <!-- Suppliers Table -->
-        <div class="bg-white shadow rounded-lg overflow-hidden">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Seller ID
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Name
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Email
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Contact Info
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Orders
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody
-              id="suppliersTableBody"
-              class="bg-white divide-y divide-gray-200"
-            >
-              <!-- Table rows will be inserted here dynamically -->
-            </tbody>
-          </table>
-        </div>
+
       </div>
     </div>
 
@@ -167,6 +320,36 @@
     <script>
       const API_BASE = "http://localhost:4004";
       let currentSeller = null;
+
+      // Toggle accordion function
+      function toggleAccordion(row, accordionId) {
+        const accordionRow = document.getElementById(accordionId);
+        const arrow = row.querySelector('.arrow-icon');
+        
+        // Close all other accordions and reset their arrows
+        document.querySelectorAll('tbody tr[id]').forEach(el => {
+          if (el.id !== accordionId) {
+            el.classList.add('hidden');
+            const prevRow = el.previousElementSibling;
+            if (prevRow) {
+              const arrowIcon = prevRow.querySelector('.arrow-icon');
+              if (arrowIcon) {
+                arrowIcon.style.transform = 'rotate(0deg)';
+              }
+            }
+          }
+        });
+        
+        // Toggle current accordion
+        accordionRow.classList.toggle('hidden');
+        
+        // Rotate arrow
+        if (accordionRow.classList.contains('hidden')) {
+          arrow.style.transform = 'rotate(0deg)';
+        } else {
+          arrow.style.transform = 'rotate(180deg)';
+        }
+      }
 
       // Fetch and display suppliers
       async function loadSuppliers() {
