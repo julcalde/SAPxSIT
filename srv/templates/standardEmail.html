@@ -1,72 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Delivery Verification</title>
-</head>
-<body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f9f9f9;">
-    <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <!-- Header -->
-        <div style="background-color: #007bff; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-            <h1 style="margin: 0; font-size: 24px;">Delivery Verification Required</h1>
+    <link rel="stylesheet" href="email-styles.css" />
+  </head>
+  <body>
+    <div class="email-container">
+      <!-- Header -->
+      <div class="email-header">
+        <h1>Delivery Verification Required</h1>
+      </div>
+
+      <!-- Content -->
+      <div class="email-content">
+        <p class="email-text">Hello,</p>
+
+        <p class="email-text-order">
+          A delivery verification link has been generated for Order ID:
+          <strong class="order-id">{{orderID}}</strong>
+        </p>
+
+        <!-- Verification Button -->
+        <div class="verification-section">
+          <div class="verification-box">
+            <p class="verification-label">Verification Link:</p>
+            <a href="{{verifyUrl}}" class="verify-button"> Verify Delivery </a>
+          </div>
         </div>
-        
-        <!-- Content -->
-        <div style="padding: 30px;">
-            <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
-                Hello,
-            </p>
-            
-            <p style="font-size: 16px; color: #333; margin-bottom: 25px;">
-                A delivery verification link has been generated for Order ID: 
-                <strong style="color: #007bff;">{{orderID}}</strong>
-            </p>
-            
-            <!-- Verification Button -->
-            <div style="text-align: center; margin: 30px 0;">
-                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
-                    <p style="margin: 0 0 15px 0; font-weight: bold; color: #333;">
-                        Verification Link:
-                    </p>
-                    <a href="{{verifyUrl}}" 
-                       style="background-color: #007bff; 
-                              color: white; 
-                              padding: 12px 30px; 
-                              text-decoration: none; 
-                              border-radius: 5px; 
-                              display: inline-block; 
-                              font-weight: bold;
-                              font-size: 16px;">
-                        Verify Delivery
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Important Notice -->
-            <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin: 25px 0;">
-                <p style="margin: 0; color: #856404; font-weight: bold;">
-                    ⚠️ Important: This link expires in 42 hours.
-                </p>
-            </div>
-            
-            <!-- Fallback URL -->
-            <div style="margin: 25px 0; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
-                <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
-                    If you cannot click the link, copy and paste this URL into your browser:
-                </p>
-                <p style="margin: 0; word-break: break-all; color: #007bff; font-size: 12px; font-family: monospace;">
-                    {{verifyUrl}}
-                </p>
-            </div>
+
+        <!-- Important Notice -->
+        <div class="important-notice">
+          <p class="notice-text">
+            ⚠️ Important: This link expires in 42 hours.
+          </p>
         </div>
-        
-        <!-- Footer -->
-        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 0 0 8px 8px; border-top: 1px solid #e9ecef;">
-            <p style="margin: 0; color: #6c757d; font-size: 12px; text-align: center;">
-                This is an automated message. Please do not reply to this email.
-            </p>
+
+        <!-- Fallback URL -->
+        <div class="fallback-section">
+          <p class="fallback-instruction">
+            If you cannot click the link, copy and paste this URL into your
+            browser:
+          </p>
+          <p class="fallback-url">{{verifyUrl}}</p>
         </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="email-footer">
+        <p class="footer-text">
+          This is an automated message. Please do not reply to this email.
+        </p>
+      </div>
     </div>
-</body>
+  </body>
 </html>
