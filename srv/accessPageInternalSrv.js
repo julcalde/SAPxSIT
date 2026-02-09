@@ -1,3 +1,5 @@
+require('./deliveryEmail')
+
 module.exports = cds.service.impl(function() {
   const { Purchases, Order } = this.entities;
 

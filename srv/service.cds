@@ -1,6 +1,6 @@
 using { AccessPage as my } from '../db/schema.cds';
 
-@path: '/service/accessPage'
+@path: '/service/accessPageInternal'
 @requires: 'authenticated-user'
 service accessPageInternalSrv {
   entity Buyers as projection on my.Buyers;
@@ -13,51 +13,9 @@ service accessPageInternalSrv {
   entity Tokens as projection on my.Tokens;
 }
 
-@path: '/service/accessPageExternal'
-@requires: 'token-authenticated'
-service accessPageExternalSrv {
-  entity Products as projection on my.Products {
-    ID,
-    productId,
-    name,
-    price,
-    Currency
-  };
-  
-  entity Purchases as projection on my.Purchases {
-    ID,
-    orderId,
-    quantity,
-    date,
-    product
-  };
-
-  entity Mangel as projection on my.Mangel {
-    istQuantity,
-    differenceQuantity,
-    purchase,
-    product,
-    ConfirmedQuantity
-  };
-
-  entity Tokens as projection on my.Tokens {
-    token,
-    orderID,
-    expires_at,
-    revoked,
-    lastUsed_at,
-    linkInUse
-  };
-}
-
 @path: '/service/tokenGeneration'
 @requires: 'authenticated-user'
 service tokenGenerationSrv {
   function generateToken(purchaseId: Integer) returns String;
 }
 
-@path: '/service/delivery'
-@requires: 'authenticated-user'
-service deliverySrv {
-  entity Delivery as projection on my.Delivery;
-}
