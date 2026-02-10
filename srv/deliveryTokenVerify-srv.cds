@@ -1,5 +1,3 @@
-using { AccessPage as my } from '../db/schema.cds';
-
 @path: '/service/deliveryTokenVerify'
 service deliveryTokenVerifySrv {
   type VerifyTokenResponse {

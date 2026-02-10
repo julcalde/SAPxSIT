@@ -12,10 +12,3 @@ service accessPageInternalSrv {
   entity Delivery as projection on my.Delivery;
   entity Tokens as projection on my.Tokens;
 }
-
-@path: '/service/tokenGeneration'
-@requires: 'authenticated-user'
-service tokenGenerationSrv {
-  function generateToken(purchaseId: Integer) returns String;
-}
-
