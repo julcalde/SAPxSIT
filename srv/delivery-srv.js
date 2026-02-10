@@ -50,51 +50,64 @@ module.exports = cds.service.impl(function () {
     }
   }
 
-  this.on("linkGeneration", async (req) => {
-    const { orderID } = req.data;
+  async function generateLink(req, orderID) {
     const userId = req.user && req.user.id;
 
     if (!userId || !orderID)
       return req.error(400, "User ID and Order ID are required.");
 
+    const order = await cds.run(
+      SELECT.one.from("AccessPage.Order", (o) => {
+        o`.*`, o.seller("*");
+      }).where({ ID: orderID })
+    );
+    if (!order) return req.error(404, "Order not found.");
+
+    // generate a token
+    const token = crypto.randomBytes(16).toString("hex");
+    const expires = new Date(Date.now() + 42 * 60 * 60 * 1000); // 42 hours
+
+    await cds.run(
+      INSERT.into("AccessPage.Tokens")
+        .columns(
+          "ID",
+          "token",
+          "orderID_ID",
+          "expires_at",
+          "revoked",
+          "linkInUse",
+          "lastUsed_at"
+        )
+        .values(randomUUID(), token, orderID, expires, false, false, null)
+    );
+
+    // Build the URL
+    const verifyUrl = generatePublicUrl(req, token);
+
+    return { token, verifyUrl, order };
+  }
+
+  this.on("linkGeneration", async (req) => {
     try {
-      const order = await cds.run(
-        SELECT.one.from("AccessPage.Order").where({ ID: orderID })
-      );
-      if (!order) return req.error(404, "Order not found.");
+      const { orderID } = req.data;
+      const { token, verifyUrl } = await generateLink(req, orderID);
+      return { token, verifyUrl };
+    } catch (err) {
+      console.error("linkGeneration error:", err);
+      return req.error(500, "Failed to generate token: " + err.message);
+    }
+  });
 
-      // generate a token
-      const token = crypto.randomBytes(16).toString("hex");
-      const expires = new Date(Date.now() + 42 * 60 * 60 * 1000); // 42 hours
-
-      await cds.run(
-        INSERT.into("AccessPage.Tokens")
-          .columns(
-            "ID",
-            "token",
-            "orderID_ID",
-            "expires_at",
-            "revoked",
-            "linkInUse",
-            "lastUsed_at"
-          )
-          .values(randomUUID(), token, orderID, expires, false, false, null)
-      );
-
-      // Build the URL
-      const protocol =
-        req.headers["x-forwarded-proto"] || (req.secure ? "https" : "http");
-      const host =
-        req.headers["x-forwarded-host"] ||
-        req.headers["host"] ||
-        "localhost:4004";
-      const verifyUrl = `${protocol}://${host}/service/accessPageExternal/verifyToken?token=${token}`;
+  this.on("sendEmail", async (req) => {
+    try {
+      const { orderID } = req.data;
+      // Await ensures verifyUrl is available before building the email body.
+      const { token, verifyUrl, order } = await generateLink(req, orderID);
 
       // Send email using template
       const emailSubject = `Delivery Verification Link - Order ${orderID}`;
       const emailHtml = loadEmailTemplate(orderID, verifyUrl);
-      const recipientEmail =
-        order.recipientEmail || "phofmann200@gmail.com";
+      const recipientEmail = order.seller?.email || "phofmann200@gmail.com";
 
       const emailResult = await sendEmail(
         recipientEmail,
@@ -108,8 +121,8 @@ module.exports = cds.service.impl(function () {
 
       return { token, verifyUrl };
     } catch (err) {
-      console.error("linkGeneration error:", err);
-      return req.error(500, "Failed to generate token: " + err.message);
+      console.error("sendEmail error:", err);
+      return req.error(500, "Failed to send email: " + err.message);
     }
   });
 });

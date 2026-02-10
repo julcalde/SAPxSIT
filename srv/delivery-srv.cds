@@ -10,5 +10,6 @@ service deliverySrv {
     verifyUrl: String;
   };
   action linkGeneration(orderID: UUID) returns TokenResponse;
+  action sendEmail(orderID: UUID) returns TokenResponse;
   
 }
