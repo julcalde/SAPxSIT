@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supplier Order Access</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Header -->
+      <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <div class="flex items-start justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Order Details</h1>
+            <p id="supplierName" class="text-xl text-gray-700 mt-2">—</p>
+            <p id="orderNumber" class="text-md text-gray-600 mt-1">Order: —</p>
+          </div>
+          <div class="text-right">
+            <p id="orderStatus" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+              Loading...
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Information -->
+      <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Information</h3>
+        <dl class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Created At</dt>
+            <dd id="createdAt" class="mt-1 text-sm text-gray-900">—</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Status</dt>
+            <dd id="statusText" class="mt-1 text-sm text-gray-900">—</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Delivery Confirmed</dt>
+            <dd id="deliveryConfirmedAt" class="mt-1 text-sm text-gray-900">—</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Delivery Notes</dt>
+            <dd id="deliveryNotes" class="mt-1 text-sm text-gray-900">—</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Delivery Confirmation Form -->
+      <div id="deliveryFormSection" class="bg-white shadow rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirm Delivery</h3>
+        <form id="confirmDeliveryForm" class="space-y-4">
+          <div>
+            <label for="deliveryDate" class="block text-sm font-medium text-gray-700">
+              Delivery Date <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              id="deliveryDate"
+              required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+            />
+          </div>
+          <div>
+            <label for="deliveryNotesInput" class="block text-sm font-medium text-gray-700">
+              Notes (optional)
+            </label>
+            <textarea
+              id="deliveryNotesInput"
+              rows="3"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+              placeholder="Enter any delivery notes..."
+            ></textarea>
+          </div>
+          <div>
+            <button
+              type="submit"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Confirm Delivery
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Documents Section -->
+      <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Documents</h3>
+          <div>
+            <input id="fileUploadInput" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" />
+            <button
+              id="uploadFileBtn"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+            >
+              Upload Document
+            </button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">File Name</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Type</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Uploaded By</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Admin Feedback</th>
+              </tr>
+            </thead>
+            <tbody id="documentsTableBody" class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td colspan="5" class="px-4 py-3 text-sm text-gray-500 text-center">Loading documents...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div id="messageContainer" class="hidden fixed top-4 right-4 z-50"></div>
+
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
