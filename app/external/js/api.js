@@ -35,9 +35,13 @@ export async function fetchProducts() {
   return data.value || [];
 }
 
-export async function updateConfirmedQuantity(mangelID, confirmedQuantity) {
-  return request("/updateConfirmedQuantity", {
+export async function fetchCurrentOrder() {
+  return request("/getCurrentOrder", { method: "POST" });
+}
+
+export async function setSellerConfirmed(confirmed) {
+  return request("/setSellerConfirmed", {
     method: "POST",
-    body: JSON.stringify({ mangelID, confirmedQuantity })
+    body: JSON.stringify({ confirmed: !!confirmed })
   });
 }

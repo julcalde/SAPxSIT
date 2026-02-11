@@ -22,6 +22,8 @@
         --line: #e6d9c8;
         --danger: #b42318;
         --ok: #067647;
+        --pending: #a15c07;
+        --pending-bg: #fff4df;
       }
 
       * {
@@ -42,6 +44,7 @@
         align-items: baseline;
         justify-content: space-between;
         gap: 16px;
+        flex-wrap: wrap;
       }
 
       h1 {
@@ -53,6 +56,32 @@
       .sub {
         color: var(--muted);
         font-size: 14px;
+      }
+
+      .order-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .badge-ok {
+        background: #d1fae5;
+        color: var(--ok);
+      }
+
+      .badge-pending {
+        background: var(--pending-bg);
+        color: var(--pending);
       }
 
       .wrap {
@@ -112,7 +141,7 @@
 
       .mangel-row {
         display: grid;
-        grid-template-columns: 1fr 100px 120px;
+        grid-template-columns: 1fr;
         gap: 10px;
         align-items: center;
         padding: 10px 0;
@@ -126,15 +155,7 @@
       .mangel-meta {
         display: flex;
         flex-direction: column;
-        gap: 4px;
-      }
-
-      .input {
-        width: 100%;
-        padding: 8px 10px;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        font-size: 14px;
+        gap: 6px;
       }
 
       .btn {
@@ -198,9 +219,13 @@
     <header>
       <div>
         <h1>Delivery Access</h1>
-        <div class="sub">Your delivery order details and confirmation</div>
+        <div class="sub">Review the declined quantities and confirm the order.</div>
       </div>
-      <div class="sub" id="sessionInfo"></div>
+      <div class="order-meta">
+        <span class="sub">Order</span>
+        <strong id="orderId">—</strong>
+        <span id="orderStatus" class="badge badge-pending">Pending</span>
+      </div>
     </header>
 
     <div class="wrap">
@@ -220,8 +245,9 @@
         </section>
 
         <section class="card">
-          <h2>Mangel Confirmations</h2>
+          <h2>Mangel Details</h2>
           <div id="mangelList"></div>
+          <button class="btn" id="confirmBtn">Confirm</button>
           <div class="status" id="mangelStatus"></div>
         </section>
       </div>

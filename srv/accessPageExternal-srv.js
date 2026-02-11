@@ -82,66 +82,27 @@ module.exports = cds.service.impl(function() {
     req.query.where({ ID: { in: subq } });
   });
 
-  this.before('UPDATE', Mangel, async (req) => {
+  this.before('READ', 'Order', (req) => {
     const orderID = requireOrderID(req);
     if (!orderID) return;
-
-    const keys = Object.keys(req.data || {});
-    const allowed = new Set(['ID', 'ConfirmedQuantity']);
-    const hasOnlyAllowed = keys.every((k) => allowed.has(k));
-    if (!hasOnlyAllowed) {
-      return req.reject(400, 'Only ConfirmedQuantity can be updated.');
-    }
-
-    const confirmed = req.data && req.data.ConfirmedQuantity;
-    if (confirmed === undefined || confirmed === null) {
-      return req.reject(400, 'ConfirmedQuantity is required.');
-    }
-    if (!Number.isInteger(confirmed) || confirmed < 0) {
-      return req.reject(400, 'ConfirmedQuantity must be an integer >= 0.');
-    }
-
-    const mangelId = (req.data && req.data.ID)
-      || (req.params && req.params[0] && req.params[0].ID);
-    if (!mangelId) {
-      return req.reject(400, 'Mangel ID is required.');
-    }
-
-    const record = await cds.run(
-      SELECT.one.from(Mangel).where({
-        ID: mangelId,
-        purchase: { orderId_ID: orderID }
-      })
-    );
-    if (!record) {
-      return req.reject(403, 'Access denied for this record.');
-    }
+    req.query.where({ ID: orderID });
   });
 
-  this.on('updateConfirmedQuantity', async (req) => {
+  this.on('getCurrentOrder', async (req) => {
+    const orderID = requireOrderID(req);
+    if (!orderID) return;
+    return cds.run(SELECT.one.from('AccessPage.Order').where({ ID: orderID }));
+  });
+
+  this.on('setSellerConfirmed', async (req) => {
     const orderID = requireOrderID(req);
     if (!orderID) return;
 
-    const { mangelID, confirmedQuantity } = req.data || {};
-    if (!mangelID) return req.reject(400, 'mangelID is required.');
-    if (!Number.isInteger(confirmedQuantity) || confirmedQuantity < 0) {
-      return req.reject(400, 'confirmedQuantity must be an integer >= 0.');
-    }
-
-    const record = await cds.run(
-      SELECT.one.from(Mangel).where({
-        ID: mangelID,
-        purchase: { orderId_ID: orderID }
-      })
-    );
-    if (!record) {
-      return req.reject(403, 'Access denied for this record.');
-    }
-
+    const confirmed = !!(req.data && req.data.confirmed);
     await cds.run(
-      UPDATE(Mangel, mangelID).set({ ConfirmedQuantity: confirmedQuantity })
+      UPDATE('AccessPage.Order', orderID).set({ sellerConfirmed: confirmed })
     );
 
-    return cds.run(SELECT.one.from(Mangel).where({ ID: mangelID }));
+    return cds.run(SELECT.one.from('AccessPage.Order').where({ ID: orderID }));
   });
 });

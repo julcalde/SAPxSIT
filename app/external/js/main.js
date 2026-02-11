@@ -2,20 +2,31 @@ import {
   fetchPurchases,
   fetchMangel,
   fetchProducts,
-  updateConfirmedQuantity
+  fetchCurrentOrder,
+  setSellerConfirmed
 } from "./api.js";
 import {
   renderLoading,
   renderPurchases,
   renderMangel,
   renderProducts,
-  setStatus
+  setStatus,
+  setOrderHeader
 } from "./ui.js";
 
 const purchasesBody = document.getElementById("purchasesBody");
 const mangelList = document.getElementById("mangelList");
 const productsBody = document.getElementById("productsBody");
 const statusEl = document.getElementById("mangelStatus");
+const confirmBtn = document.getElementById("confirmBtn");
+const orderIdEl = document.getElementById("orderId");
+const orderStatusEl = document.getElementById("orderStatus");
+
+async function loadOrderHeader() {
+  const order = await fetchCurrentOrder();
+  setOrderHeader(orderIdEl, orderStatusEl, order);
+  return order;
+}
 
 async function loadAll() {
   renderLoading(purchasesBody);
@@ -23,47 +34,44 @@ async function loadAll() {
   renderLoading(productsBody);
 
   try {
-    const [purchases, mangel, products] = await Promise.all([
+    const [purchases, mangel, products, order] = await Promise.all([
       fetchPurchases(),
       fetchMangel(),
-      fetchProducts()
+      fetchProducts(),
+      loadOrderHeader()
     ]);
 
     renderPurchases(purchasesBody, purchases);
     renderMangel(mangelList, mangel);
     renderProducts(productsBody, products);
+    toggleConfirmButton(order);
   } catch (err) {
     setStatus(statusEl, `Failed to load data: ${err.message}`, "err");
   }
 }
 
-mangelList.addEventListener("click", async (e) => {
-  const btn = e.target.closest("[data-confirmed-save]");
-  if (!btn) return;
+function toggleConfirmButton(order) {
+  const confirmed = !!(order && order.sellerConfirmed);
+  confirmBtn.textContent = confirmed ? "Unconfirm" : "Confirm";
+  confirmBtn.dataset.confirmed = confirmed ? "true" : "false";
+}
 
-  const row = btn.closest("[data-mangel-id]");
-  if (!row) return;
+confirmBtn.addEventListener("click", async () => {
+  const current = confirmBtn.dataset.confirmed === "true";
+  const next = !current;
 
-  const input = row.querySelector("[data-confirmed-input]");
-  const rawValue = input ? input.value : "";
-  const mangelID = row.getAttribute("data-mangel-id");
-
-  const confirmedQuantity = Number(rawValue);
-  if (!Number.isInteger(confirmedQuantity) || confirmedQuantity < 0) {
-    setStatus(statusEl, "ConfirmedQuantity must be an integer >= 0.", "err");
-    return;
-  }
-
-  btn.disabled = true;
-  setStatus(statusEl, "Saving...", "");
+  confirmBtn.disabled = true;
+  setStatus(statusEl, next ? "Confirming..." : "Unconfirming...", "");
 
   try {
-    await updateConfirmedQuantity(mangelID, confirmedQuantity);
-    setStatus(statusEl, "Saved.", "ok");
+    const order = await setSellerConfirmed(next);
+    setOrderHeader(orderIdEl, orderStatusEl, order);
+    toggleConfirmButton(order);
+    setStatus(statusEl, next ? "Order confirmed." : "Order unconfirmed.", "ok");
   } catch (err) {
-    setStatus(statusEl, `Save failed: ${err.message}`, "err");
+    setStatus(statusEl, `Update failed: ${err.message}`, "err");
   } finally {
-    btn.disabled = false;
+    confirmBtn.disabled = false;
   }
 });
 

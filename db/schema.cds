@@ -39,7 +39,8 @@ entity Mangel : cuid {
   differenceQuantity: Integer = (istQuantity - purchase.quantity);
   purchase: Association to Purchases;
   product: Association to Products;
-  ConfirmedQuantity: Integer;
+  DeclinedQuantity: Integer @mandatory;
+  DeclinedReason: String(500) @mandatory;
 }
 
 entity Order : cuid {

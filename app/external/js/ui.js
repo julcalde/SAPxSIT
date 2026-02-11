@@ -78,23 +78,17 @@ export function renderMangel(container, mangel) {
       const productName = m.product?.name ?? "—";
       const ist = m.istQuantity ?? "—";
       const diff = m.differenceQuantity ?? "—";
-      const confirmed = m.ConfirmedQuantity ?? "";
+      const declinedQty = m.DeclinedQuantity ?? "—";
+      const declinedReason = m.DeclinedReason ?? "—";
 
       return `
-        <div class="mangel-row" data-mangel-id="${escapeHtml(m.ID)}">
+        <div class="mangel-row">
           <div class="mangel-meta">
             <div><strong>${escapeHtml(productName)}</strong></div>
             <div class="pill">Ist: ${escapeHtml(ist)} • Diff: ${escapeHtml(diff)}</div>
+            <div class="pill">Declined Qty: ${escapeHtml(declinedQty)}</div>
+            <div class="pill">Reason: ${escapeHtml(declinedReason)}</div>
           </div>
-          <input
-            class="input"
-            type="number"
-            min="0"
-            step="1"
-            value="${escapeHtml(confirmed)}"
-            data-confirmed-input
-          />
-          <button class="btn" data-confirmed-save>Save</button>
         </div>
       `;
     })
@@ -103,6 +97,15 @@ export function renderMangel(container, mangel) {
   if (!mangel.length) {
     container.innerHTML = `<div>No mangel records found.</div>`;
   }
+}
+
+export function setOrderHeader(orderIdEl, statusEl, order) {
+  const id = order && order.ID ? order.ID : "—";
+  const confirmed = !!(order && order.sellerConfirmed);
+  orderIdEl.textContent = id;
+  statusEl.textContent = confirmed ? "Confirmed" : "Pending";
+  statusEl.classList.toggle("badge-ok", confirmed);
+  statusEl.classList.toggle("badge-pending", !confirmed);
 }
 
 export function setStatus(el, msg, type) {

@@ -23,7 +23,8 @@ service accessPageExternalSrv {
     differenceQuantity,
     purchase,
     product,
-    ConfirmedQuantity
+    DeclinedQuantity,
+    DeclinedReason
   };
 
   entity Tokens as projection on my.Tokens {
@@ -35,5 +36,13 @@ service accessPageExternalSrv {
     linkInUse
   };
 
-  action updateConfirmedQuantity(mangelID: UUID, confirmedQuantity: Integer) returns Mangel;
+  entity Order as projection on my.Order {
+    ID,
+    buyer,
+    created_on,
+    seller,
+    sellerConfirmed
+  }
+  action getCurrentOrder() returns Order;
+  action setSellerConfirmed(confirmed: Boolean) returns Order;
 }
