@@ -106,6 +106,11 @@ module.exports = cds.service.impl(function () {
   this.on('verifyAndRedirect', async (req) => {
     const result = await verifyAndIssueSession(req);
     
+    // If verification failed, don't redirect
+    if (!result || !result.success) {
+      return result;
+    }
+    
     // Get redirect parameter
     const redirect =
       (req.data && req.data.redirect) ||
