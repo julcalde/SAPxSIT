@@ -17,7 +17,7 @@ module.exports = {
   generatePublicUrl: (req, token) => {
     // Prefer configured public base URL (set in Cloud manifest/environment)
     const publicBaseUrl = process.env.PUBLIC_BASE_URL;
-    const redirectPath = process.env.EXTERNAL_APP_URL || '/app/external/index.html';
+    const redirectPath = process.env.EXTERNAL_APP_URL || '/external/index.html';
     const redirectParam = encodeURIComponent(redirectPath);
     
     if (publicBaseUrl) {
