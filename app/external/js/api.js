@@ -108,3 +108,10 @@ function fileToBase64(file) {
 export function hasValidSession() {
   return !!getSessionToken();
 }
+
+export function getDocumentDownloadUrl(docID) {
+  if (!docID) return null;
+  const token = getSessionToken();
+  // For external service, we include the session token in URL or rely on cookie
+  return `${SERVICE_URL}/Documents(ID=${docID},IsActiveEntity=true)/content/$value`;
+}

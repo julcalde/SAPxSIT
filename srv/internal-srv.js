@@ -81,6 +81,117 @@ module.exports = cds.service.impl(function () {
   });
 
   // -------------------------
+  // Supplier Creation
+  // -------------------------
+  this.on('createSupplier', async (req) => {
+    try {
+      const { name, email } = req.data;
+      
+      if (!name || !email) {
+        return req.error(400, 'Name and email are required');
+      }
+
+      // Generate supplier ID
+      const supplierID = `SUP-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+      const newSupplier = {
+        ID: randomUUID(),
+        supplierID,
+        name,
+        email
+      };
+
+      await INSERT.into(Suppliers).entries(newSupplier);
+
+      console.log(`[InternalService] Created supplier ${supplierID} - ${name}`);
+
+      return newSupplier;
+    } catch (err) {
+      console.error('[InternalService] Supplier creation error:', err);
+      return req.error(500, `Failed to create supplier: ${err.message}`);
+    }
+  });
+
+  // -------------------------
+  // Combined Order + Token Creation
+  // -------------------------
+  this.on('createOrderAndToken', async (req) => {
+    try {
+      const { supplierId } = req.data;
+      
+      if (!supplierId) {
+        return req.error(400, 'Supplier ID is required');
+      }
+
+      // Check supplier exists
+      const supplier = await SELECT.one.from(Suppliers).where({ ID: supplierId });
+      if (!supplier) {
+        return req.error(404, 'Supplier not found');
+      }
+
+      // Create order
+      const orderId = randomUUID();
+      await INSERT.into(Orders).entries({
+        ID: orderId,
+        orderNumber: `ORD-${Date.now()}`,
+        supplier_ID: supplierId,
+        createdAt: new Date(),
+        status: 'PENDING'
+      });
+
+      // Generate token
+      const tokenResult = await generateToken(orderId, req.user?.id || 'admin');
+      const verifyUrl = generatePublicUrl(req, tokenResult.token);
+
+      console.log(`[InternalService] Created order ${orderId} with token for supplier ${supplier.name}`);
+
+      return {
+        orderId,
+        token: tokenResult.token,
+        verifyUrl
+      };
+    } catch (err) {
+      console.error('[InternalService] Order+Token creation error:', err);
+      return req.error(500, `Failed to create order and token: ${err.message}`);
+    }
+  });
+
+  // -------------------------
+  // Token Revocation
+  // -------------------------
+  this.on('revokeToken', async (req) => {
+    try {
+      const { tokenID } = req.data;
+      
+      if (!tokenID) {
+        return req.error(400, 'Token ID is required');
+      }
+
+      // Check if token exists
+      const token = await SELECT.one.from(AccessTokens).where({ ID: tokenID });
+      if (!token) {
+        return req.error(404, 'Token not found');
+      }
+
+      // Revoke token
+      await UPDATE(AccessTokens, tokenID).set({ 
+        revoked: true,
+        revokedAt: new Date(),
+        revokedBy: req.user?.id || 'admin'
+      });
+
+      console.log(`[InternalService] Revoked token ${tokenID}`);
+
+      return {
+        success: true,
+        message: 'Token revoked successfully'
+      };
+    } catch (err) {
+      console.error('[InternalService] Token revocation error:', err);
+      return req.error(500, `Failed to revoke token: ${err.message}`);
+    }
+  });
+
+  // -------------------------
   // Email Integration
   // -------------------------
   this.on('sendVerificationEmail', async (req) => {

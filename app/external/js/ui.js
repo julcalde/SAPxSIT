@@ -84,7 +84,7 @@ export function renderDocuments(documents) {
   if (!documents || documents.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" class="px-4 py-3 text-sm text-gray-500 text-center">No documents available</td>
+        <td colspan="6" class="px-4 py-3 text-sm text-gray-500 text-center">No documents available</td>
       </tr>
     `;
     return;
@@ -110,6 +110,15 @@ export function renderDocuments(documents) {
           </span>
         </td>
         <td class="px-4 py-3 text-sm text-gray-500">${escapeHtml(doc.adminFeedback || '—')}</td>
+        <td class="px-4 py-3 text-sm text-right">
+          <button 
+            onclick="window.handleDownloadDocument('${doc.ID}', '${escapeHtml(doc.filename || 'document.pdf')}')"
+            class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200"
+            title="Download"
+          >
+            ⬇ Download
+          </button>
+        </td>
       </tr>
     `;
   }).join('');

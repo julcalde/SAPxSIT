@@ -5,7 +5,13 @@ import {
   fetchDocumentsForOrder,
   generateSecureLink, 
   sendVerificationEmail,
-  updateDocumentStatus 
+  updateDocumentStatus,
+  createSupplier,
+  createOrderAndToken,
+  getDocumentDownloadUrl,
+  uploadDocumentContent,
+  createDocumentForOrder,
+  deleteDocument
 } from './api.js';
 
 import { 
@@ -21,22 +27,127 @@ import {
 } from './ui.js';
 
 let currentOrders = [];
+let currentSuppliers = [];
 
 async function init() {
   try {
     // Fetch and render suppliers
-    const suppliers = await fetchSuppliers();
-    renderSuppliers(suppliers);
+    currentSuppliers = await fetchSuppliers();
+    renderSuppliers(currentSuppliers);
+    
+    // Populate supplier dropdown
+    populateSupplierDropdown(currentSuppliers);
 
     // Fetch and render orders
     currentOrders = await fetchOrders();
     renderOrders(currentOrders);
+
+    // Wire up event handlers
+    wireCreateSupplier();
+    wireCreateOrder();
+    wireDocumentUpload();
 
     showMessage('Data loaded successfully', 'success');
   } catch (error) {
     console.error('Initialization error:', error);
     showMessage(error.message, 'error');
   }
+}
+
+// Populate supplier dropdown
+function populateSupplierDropdown(suppliers) {
+  const select = document.getElementById('supplierSelect');
+  if (!select) return;
+  
+  select.innerHTML = '<option value="">-- Choose Supplier --</option>';
+  suppliers.forEach(s => {
+    const option = document.createElement('option');
+    option.value = s.ID;
+    option.textContent = `${s.name} (${s.email})`;
+    select.appendChild(option);
+  });
+}
+
+// Create Supplier Handler
+function wireCreateSupplier() {
+  const btn = document.getElementById('createSupplierBtn');
+  const msgEl = document.getElementById('supplierCreateMsg');
+  
+  if (!btn) return;
+  
+  btn.addEventListener('click', async () => {
+    msgEl.textContent = '';
+    
+    const name = document.getElementById('newSupplierName')?.value.trim();
+    const email = document.getElementById('newSupplierEmail')?.value.trim();
+    
+    if (!name || !email) {
+      msgEl.textContent = 'Please enter name and email.';
+      msgEl.className = 'text-sm text-red-600';
+      return;
+    }
+    
+    try {
+      const supplier = await createSupplier(name, email);
+      msgEl.textContent = `✅ Created: ${supplier.name} (${supplier.supplierID})`;
+      msgEl.className = 'text-sm text-green-600';
+      
+      // Clear inputs
+      document.getElementById('newSupplierName').value = '';
+      document.getElementById('newSupplierEmail').value = '';
+      
+      // Refresh suppliers
+      currentSuppliers = await fetchSuppliers();
+      renderSuppliers(currentSuppliers);
+      populateSupplierDropdown(currentSuppliers);
+      
+      showMessage('Supplier created successfully!', 'success');
+    } catch (e) {
+      msgEl.textContent = e?.message || String(e);
+      msgEl.className = 'text-sm text-red-600';
+    }
+  });
+}
+
+// Create Order + Token Handler
+function wireCreateOrder() {
+  const btn = document.getElementById('createOrderBtn');
+  const msgEl = document.getElementById('supplierCreateMsg');
+  
+  if (!btn) return;
+  
+  btn.addEventListener('click', async () => {
+    const supplierId = document.getElementById('supplierSelect')?.value;
+    
+    if (!supplierId) {
+      msgEl.textContent = 'Please select a supplier first.';
+      msgEl.className = 'text-sm text-red-600';
+      return;
+    }
+    
+    try {
+      msgEl.textContent = '';
+      
+      const result = await createOrderAndToken(supplierId);
+      
+      // Show token result
+      const tokenResult = document.getElementById('tokenResult');
+      const tokenLink = document.getElementById('tokenLink');
+      if (tokenResult && tokenLink) {
+        tokenLink.textContent = result.verifyUrl;
+        tokenResult.classList.remove('hidden');
+      }
+      
+      // Refresh orders
+      currentOrders = await fetchOrders();
+      renderOrders(currentOrders);
+      
+      showMessage('Order and verification link created!', 'success');
+    } catch (e) {
+      msgEl.textContent = e?.message || String(e);
+      msgEl.className = 'text-sm text-red-600';
+    }
+  });
 }
 
 // Generate Link Handler
@@ -96,6 +207,97 @@ window.handleViewDocuments = async function(orderID, orderNumber) {
 // Update Status Handler
 window.handleUpdateStatus = function(documentID, currentStatus, currentFeedback) {
   showStatusModal(documentID, currentStatus, currentFeedback);
+};
+
+// Download Document Handler
+window.handleDownloadDocument = function(docID, filename) {
+  const downloadUrl = getDocumentDownloadUrl(docID);
+  if (downloadUrl) {
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = filename || 'document.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+};
+
+// Delete Document Handler
+window.handleDeleteDocument = async function(docID) {
+  if (!confirm('Are you sure you want to delete this document?')) {
+    return;
+  }
+  
+  try {
+    showMessage('Deleting document...', 'info');
+    await deleteDocument(docID);
+    showMessage('Document deleted successfully!', 'success');
+    
+    // Refresh document list
+    setTimeout(() => window.location.reload(), 1500);
+  } catch (error) {
+    console.error('Delete document error:', error);
+    showMessage(error.message, 'error');
+  }
+};
+
+// Wire Document Upload
+function wireDocumentUpload() {
+  // Create hidden file input for uploads
+  const uploadInput = document.createElement('input');
+  uploadInput.type = 'file';
+  uploadInput.accept = 'application/pdf';
+  uploadInput.className = 'hidden';
+  uploadInput.id = 'adminOrderUploadInput';
+  document.body.appendChild(uploadInput);
+  
+  uploadInput.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    
+    if (file.type !== 'application/pdf') {
+      showMessage('Please upload PDF files only.', 'error');
+      uploadInput.value = '';
+      return;
+    }
+    
+    const orderId = uploadInput.dataset.targetOrderId;
+    if (!orderId) {
+      showMessage('No order selected.', 'error');
+      uploadInput.value = '';
+      return;
+    }
+    
+    try {
+      showMessage('Uploading document...', 'info');
+      
+      const docId = 'DOC-' + Date.now();
+      const created = await createDocumentForOrder(orderId, docId, file.type);
+      const targetID = created.ID || docId;
+      
+      await uploadDocumentContent(targetID, file);
+      
+      showMessage('Document uploaded successfully!', 'success');
+      
+      // Refresh view
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (err) {
+      console.error('Upload failed', err);
+      showMessage('Upload failed: ' + (err.message || err), 'error');
+    } finally {
+      uploadInput.value = '';
+      delete uploadInput.dataset.targetOrderId;
+    }
+  });
+}
+
+// Upload Document Button Handler
+window.handleUploadDocument = function(orderID) {
+  const uploadInput = document.getElementById('adminOrderUploadInput');
+  if (!uploadInput) return;
+  
+  uploadInput.dataset.targetOrderId = orderID;
+  uploadInput.click();
 };
 
 // Copy Link Button

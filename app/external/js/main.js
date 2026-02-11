@@ -1,5 +1,5 @@
 // app/external/js/main.js
-import { fetchOrders, fetchDocuments, confirmDelivery, uploadDocument, hasValidSession } from './api.js';
+import { fetchOrders, fetchDocuments, confirmDelivery, uploadDocument, hasValidSession, getDocumentDownloadUrl } from './api.js';
 import { showMessage, renderOrderInfo, renderDocuments, setLoadingState } from './ui.js';
 
 async function init() {
@@ -117,6 +117,19 @@ if (uploadBtn && fileInput) {
     }
   });
 }
+
+// Document download handler
+window.handleDownloadDocument = function(docID, filename) {
+  const downloadUrl = getDocumentDownloadUrl(docID);
+  if (downloadUrl) {
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = filename || 'document.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+};
 
 // Initialize app
 init().catch(err => {

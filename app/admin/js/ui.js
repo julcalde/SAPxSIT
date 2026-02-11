@@ -109,6 +109,13 @@ export function renderOrders(orders, onGenerateLink, onSendEmail, onViewDocument
           >
             View Documents
           </button>
+          <button 
+            onclick="window.handleUploadDocument('${order.ID}')"
+            class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-purple-700 bg-purple-100 hover:bg-purple-200"
+            title="Upload PDF"
+          >
+            📄 Upload
+          </button>
         </td>
       </tr>
     `;
@@ -148,12 +155,26 @@ export function renderDocuments(documents, onUpdateStatus) {
           </span>
         </td>
         <td class="px-6 py-4 text-sm text-gray-500">${escapeHtml(doc.adminFeedback || '—')}</td>
-        <td class="px-6 py-4 text-sm text-right">
+        <td class="px-6 py-4 text-sm text-right space-x-1">
           <button 
             onclick="window.handleUpdateStatus('${doc.ID}', '${doc.status_code || 'pending'}', '${escapeHtml(doc.adminFeedback || '')}')"
             class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
           >
             Update Status
+          </button>
+          <button 
+            onclick="window.handleDownloadDocument('${doc.ID}', '${escapeHtml(doc.filename || 'document.pdf')}')"
+            class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200"
+            title="Download"
+          >
+            ⬇
+          </button>
+          <button 
+            onclick="window.handleDeleteDocument('${doc.ID}')"
+            class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200"
+            title="Delete"
+          >
+            🗑
           </button>
         </td>
       </tr>

@@ -27,6 +27,14 @@ service InternalService {
     message: String;
   };
   
+  // Supplier and Order creation
+  action createSupplier(name: String, email: String) returns Suppliers;
+  action createOrderAndToken(supplierId: UUID) returns {
+    orderId: UUID;
+    token: String;
+    verifyUrl: String;
+  };
+  
   // Document management
   action updateDocumentStatus(documentID: UUID, statusCode: String, feedback: String) returns String;
 }
