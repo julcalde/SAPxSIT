@@ -1,0 +1,3 @@
+ID;documentID;filename;filetype;uploadedBy;createdAt;order_ID;status_code
+c1d2e3f4-a5b6-4789-c012-34567890abc1;DOC-001;invoice_2026_001.pdf;application/pdf;admin;2026-02-01T14:30:00Z;b1c2d3e4-f5a6-4789-b012-234567890ab1;pending
+c1d2e3f4-a5b6-4789-c012-34567890abc2;DOC-002;delivery_note.pdf;application/pdf;admin;2026-02-03T09:15:00Z;b1c2d3e4-f5a6-4789-b012-234567890ab1;approved

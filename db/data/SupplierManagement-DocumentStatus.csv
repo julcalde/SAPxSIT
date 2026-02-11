@@ -1,0 +1,4 @@
+code;name;criticality
+pending;Pending;2
+approved;Approved;3
+rejected;Rejected;1
