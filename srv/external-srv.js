@@ -109,7 +109,24 @@ module.exports = cds.service.impl(function() {
 
       console.log(`[ExternalService] Delivery confirmed for order ${orderID}`);
 
-      // TODO: Send notification to admin
+      // Send notification email to admin
+      try {
+        const { sendAdminNotification } = require('./utils/emailService');
+        const order = await SELECT.one.from(Orders)
+          .columns('orderNumber', 'deliveryNotes')
+          .where({ ID: orderID });
+        
+        await sendAdminNotification({
+          orderNumber: order.orderNumber,
+          deliveryDate,
+          deliveryNotes: notes || 'No notes provided',
+          confirmedAt: new Date().toISOString()
+        });
+        console.log(`[ExternalService] Admin notification sent for order ${order.orderNumber}`);
+      } catch (emailError) {
+        // Log error but don't fail the confirmation
+        console.error('[ExternalService] Failed to send admin notification:', emailError.message);
+      }
       
       return {
         success: true,

@@ -30,7 +30,8 @@ module.exports = cds.service.impl(function () {
 
     // Generate token
     const token = crypto.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 42 * 60 * 60 * 1000); // 42 hours
+    // 42 hours, 13 minutes, 37 seconds = (42 * 60 * 60 + 13 * 60 + 37) * 1000 ms
+    const expires = new Date(Date.now() + (42 * 60 * 60 + 13 * 60 + 37) * 1000);
 
     // Store token in database
     await INSERT.into(AccessTokens).entries({

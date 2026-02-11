@@ -22,6 +22,10 @@ service InternalService {
     message: String;
     verifyUrl: String;
   };
+  action revokeToken(tokenID: UUID) returns {
+    success: Boolean;
+    message: String;
+  };
   
   // Document management
   action updateDocumentStatus(documentID: UUID, statusCode: String, feedback: String) returns String;

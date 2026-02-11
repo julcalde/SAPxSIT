@@ -22,6 +22,7 @@ module.exports = cds.service.impl(function () {
       );
 
       if (!tokenRecord) {
+        console.warn(`[TokenVerification] Invalid token attempt: ${token.substring(0, 10)}...`);
         return req.error(404, 'Invalid token');
       }
       
@@ -30,6 +31,7 @@ module.exports = cds.service.impl(function () {
       }
 
       if (tokenRecord.linkInUse) {
+        console.warn(`[TokenVerification] Token reuse attempt for order ${tokenRecord.order_ID}, last used: ${tokenRecord.lastUsedAt}`);
         return req.error(403, 'Token has already been used. Please request a new verification link.');
       }
 
@@ -102,7 +104,6 @@ module.exports = cds.service.impl(function () {
   this.on('verifyToken', async (req) => {
     return verifyAndIssueSession(req);
   });
-
   this.on('verifyAndRedirect', async (req) => {
     const result = await verifyAndIssueSession(req);
     
