@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Delivery Verification</title>
+    <link rel="stylesheet" href="email-styles.css" />
+  </head>
+  <body>
+    <div class="email-container">
+      <!-- Header -->
+      <div class="email-header">
+        <h1>Delivery Verification Required</h1>
+      </div>
+
+      <!-- Content -->
+      <div class="email-content">
+        <p class="email-text">Hello {{supplierName}},</p>
+
+        <p class="email-text-order">
+          A delivery verification link has been generated for Order:
+          <strong class="order-id">{{orderID}}</strong>
+        </p>
+
+        <p class="email-text">
+          Please click the button below to access your order details and confirm delivery.
+        </p>
+
+        <!-- Verification Button -->
+        <div class="verification-section">
+          <div class="verification-box">
+            <p class="verification-label">Click here to verify delivery:</p>
+            <a href="{{verifyUrl}}" class="verify-button">Verify Delivery</a>
+          </div>
+        </div>
+
+        <!-- Important Notice -->
+        <div class="important-notice">
+          <p class="notice-text">
+            ⚠️ Important: This link expires in 42 hours ({{expiresAt}}).
+          </p>
+        </div>
+
+        <!-- Fallback URL -->
+        <div class="fallback-section">
+          <p class="fallback-instruction">
+            If you cannot click the link above, copy and paste this URL into your browser:
+          </p>
+          <p class="fallback-url">{{verifyUrl}}</p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="email-footer">
+        <p class="footer-text">
+          This is an automated message. Please do not reply to this email.
+        </p>
+        <p class="footer-text">
+          If you have questions, please contact your account manager.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
