@@ -318,7 +318,7 @@
     </div>
 
     <script>
-      const API_BASE = "http://localhost:4004";
+      const API_BASE = "";
       let currentSeller = null;
 
       // Toggle accordion function
@@ -504,8 +504,9 @@
           }
 
           const result = await response.json();
+          const linkInfo = result.verifyUrl ? ` Link: ${result.verifyUrl}` : "";
           showSuccess(
-            `Email sent successfully to ${currentSeller.name} (${currentSeller.email})`
+            `Email sent successfully to ${currentSeller.name} (${currentSeller.email}).${linkInfo}`
           );
           closeOrderModal();
         } catch (error) {

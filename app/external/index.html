@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Delivery Access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f6f1ea;
+        --bg-2: #f2e7da;
+        --ink: #1c1b1a;
+        --muted: #6d675f;
+        --accent: #0b4f6c;
+        --accent-2: #f0b429;
+        --card: #ffffff;
+        --line: #e6d9c8;
+        --danger: #b42318;
+        --ok: #067647;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", system-ui, -apple-system, Segoe UI, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(1200px 800px at 10% 10%, var(--bg-2), var(--bg));
+        min-height: 100vh;
+      }
+
+      header {
+        padding: 28px 24px 12px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        letter-spacing: -0.5px;
+      }
+
+      .sub {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .wrap {
+        padding: 12px 24px 48px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      @media (min-width: 960px) {
+        .grid {
+          grid-template-columns: 1.2fr 1fr;
+        }
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 8px 30px rgba(22, 20, 18, 0.06);
+      }
+
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .table th,
+      .table td {
+        text-align: left;
+        padding: 10px 8px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+        font-size: 14px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        background: #eef6f8;
+        color: var(--accent);
+      }
+
+      .mangel-row {
+        display: grid;
+        grid-template-columns: 1fr 100px 120px;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .mangel-row:last-child {
+        border-bottom: none;
+      }
+
+      .mangel-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .input {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-size: 14px;
+      }
+
+      .btn {
+        appearance: none;
+        border: none;
+        background: var(--accent);
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .status {
+        margin-top: 10px;
+        font-size: 14px;
+      }
+
+      .status.ok {
+        color: var(--ok);
+      }
+
+      .status.err {
+        color: var(--danger);
+      }
+
+      .loading {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent-2);
+        animation: pulse 1.2s infinite ease-in-out;
+      }
+
+      .dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      .dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes pulse {
+        0%, 100% { transform: translateY(0); opacity: 0.4; }
+        50% { transform: translateY(-4px); opacity: 1; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Delivery Access</h1>
+        <div class="sub">Your delivery order details and confirmation</div>
+      </div>
+      <div class="sub" id="sessionInfo"></div>
+    </header>
+
+    <div class="wrap">
+      <div class="grid">
+        <section class="card">
+          <h2>Purchases</h2>
+          <table class="table" id="purchasesTable">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="purchasesBody"></tbody>
+          </table>
+        </section>
+
+        <section class="card">
+          <h2>Mangel Confirmations</h2>
+          <div id="mangelList"></div>
+          <div class="status" id="mangelStatus"></div>
+        </section>
+      </div>
+
+      <section class="card" style="margin-top: 18px;">
+        <h2>Products</h2>
+        <table class="table" id="productsTable">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Price</th>
+              <th>Currency</th>
+            </tr>
+          </thead>
+          <tbody id="productsBody"></tbody>
+        </table>
+      </section>
+    </div>
+
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>
