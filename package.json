@@ -39,6 +39,11 @@
           "kind": "xsuaa"
         }
       }
+    },
+    "server": {
+      "body-parser": {
+        "limit": "10mb"
+      }
     }
   }
 }
