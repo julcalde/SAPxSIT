@@ -209,4 +209,55 @@ module.exports = cds.service.impl(function() {
       return req.error(500, `Failed to upload document: ${err.message}`);
     }
   });
+
+  // Download Document Function
+  this.on('downloadDocument', async (req) => {
+    try {
+      const orderID = requireOrderID(req);
+      if (!orderID) return;
+
+      const { documentID } = req.data;
+      
+      if (!documentID) {
+        return req.error(400, 'Document ID is required');
+      }
+
+      // Get document and verify it belongs to user's order
+      const document = await SELECT.one.from(Documents).where({ ID: documentID });
+      
+      if (!document) {
+        return req.error(404, 'Document not found');
+      }
+
+      if (document.order_ID !== orderID) {
+        return req.error(403, 'Access denied to this document');
+      }
+
+      // Read file content
+      const uploadDir = path.join(process.cwd(), 'uploads');
+      const uniqueFilename = `${document.ID}_*.${document.filename.split('.').pop()}`;
+      
+      // Find the actual file (it has UUID prefix)
+      const files = await fs.readdir(uploadDir);
+      const matchingFile = files.find(f => f.includes(document.ID));
+      
+      if (!matchingFile) {
+        return req.error(404, 'Document file not found on server');
+      }
+
+      const filepath = path.join(uploadDir, matchingFile);
+      const content = await fs.readFile(filepath);
+
+      console.log(`[ExternalService] Document downloaded: ${document.documentID}`);
+
+      return {
+        filename: document.filename,
+        contentType: document.filetype,
+        content: content.toString('base64')
+      };
+    } catch (err) {
+      console.error('[ExternalService] Document download error:', err);
+      return req.error(500, `Failed to download document: ${err.message}`);
+    }
+  });
 });
