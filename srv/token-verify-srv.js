@@ -65,25 +65,26 @@ module.exports = cds.service.impl(function () {
         const maxAgeMs = 24 * 60 * 60 * 1000;
         const isProd = process.env.NODE_ENV === 'production';
         
-        if (typeof res.cookie === 'function') {
-          res.cookie('external_session', sessionToken, {
-            httpOnly: true,
-            sameSite: 'Lax',
-            secure: isProd,
-            maxAge: maxAgeMs,
-            path: '/'
-          });
-        } else {
-          const parts = [
-            `external_session=${sessionToken}`,
-            'Path=/',
-            'HttpOnly',
-            'SameSite=Lax',
-            `Max-Age=${Math.floor(maxAgeMs / 1000)}`
-          ];
-          if (isProd) parts.push('Secure');
-          res.setHeader('Set-Cookie', parts.join('; '));
-        }
+        console.log('[TokenVerification] Setting cookie for session:', { 
+          orderID: tokenRecord.order_ID, 
+          isProd, 
+          hasCookieMethod: typeof res.cookie === 'function' 
+        });
+        
+        // Manually set cookie header to ensure it works
+        const cookieParts = [
+          `external_session=${sessionToken}`,
+          'Path=/',
+          'HttpOnly',
+          'SameSite=Lax',
+          `Max-Age=${Math.floor(maxAgeMs / 1000)}`
+        ];
+        if (isProd) cookieParts.push('Secure');
+        
+        res.setHeader('Set-Cookie', cookieParts.join('; '));
+        console.log('[TokenVerification] Cookie header set:', cookieParts.join('; ').substring(0, 100) + '...');
+      } else {
+        console.warn('[TokenVerification] No response object available to set cookie!');
       }
 
       console.log(`[TokenVerification] Token verified for order ${tokenRecord.order_ID}`);
@@ -119,9 +120,45 @@ module.exports = cds.service.impl(function () {
       (req._ && req._.req && req._.req.query && req._.req.query.redirect);
 
     // Perform redirect if available
-    if (redirect && req._ && req._.res && typeof req._.res.redirect === 'function') {
-      req._.res.redirect(302, redirect);
-      return result;
+    const res = req._ && req._.res;
+    if (redirect && res) {
+      console.log('[TokenVerification] Redirecting to:', redirect);
+      console.log('[TokenVerification] Session token for URL:', result.sessionToken ? 'EXISTS' : 'MISSING');
+      
+      // Pass the session token in URL since cookies aren't persisting through redirects
+      const redirectUrl = `${redirect}?sessionToken=${encodeURIComponent(result.sessionToken)}`;
+      console.log('[TokenVerification] Full redirect URL:', redirectUrl);
+      
+      res.status(200);
+      res.setHeader('Content-Type', 'text/html');
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta http-equiv="refresh" content="1;url=${redirectUrl}">
+          <title>Verifying Access...</title>
+          <style>
+            body { font-family: sans-serif; text-align: center; padding: 50px; }
+            .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; 
+                       border-radius: 50%; width: 40px; height: 40px; 
+                       animation: spin 1s linear infinite; margin: 20px auto; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          </style>
+        </head>
+        <body>
+          <div class="spinner"></div>
+          <p>Verifying your access...</p>
+          <p><small>Redirecting to your order details...</small></p>
+          <script>
+            setTimeout(function() {
+              console.log('[Redirect] Navigating to:', '${redirectUrl}');
+              window.location.href = '${redirectUrl}';
+            }, 500);
+          </script>
+        </body>
+        </html>
+      `);
+      return;
     }
 
     return result;
