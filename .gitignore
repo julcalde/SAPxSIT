@@ -11,6 +11,9 @@ gen/
 default-env.json
 .env.local
 
+# Uploads
+uploads/
+
 # IDE
 .vscode/
 .idea/
