@@ -192,6 +192,174 @@ module.exports = cds.service.impl(function () {
   });
 
   // -------------------------
+  // Archive Supplier (Soft Delete)
+  // -------------------------
+  this.on('archiveSupplier', async (req) => {
+    try {
+      const { supplierId } = req.data;
+      
+      if (!supplierId) {
+        return req.error(400, 'Supplier ID is required');
+      }
+
+      // Check if supplier exists
+      const supplier = await SELECT.one.from(Suppliers).where({ ID: supplierId });
+      if (!supplier) {
+        return req.error(404, 'Supplier not found');
+      }
+
+      // Check if supplier has any non-cancelled orders
+      const activeOrders = await SELECT.from(Orders)
+        .where({ supplier_ID: supplierId })
+        .and(`status != 'CANCELLED'`);
+      
+      if (activeOrders && activeOrders.length > 0) {
+        return req.error(400, `Cannot archive supplier with ${activeOrders.length} active order(s). Cancel orders first.`);
+      }
+
+      // Archive supplier
+      await UPDATE(Suppliers, supplierId).set({
+        isActive: false,
+        archivedAt: new Date(),
+        archivedBy: req.user?.id || 'admin'
+      });
+
+      console.log(`[InternalService] Archived supplier ${supplierId}`);
+
+      return {
+        success: true,
+        message: 'Supplier archived successfully'
+      };
+    } catch (err) {
+      console.error('[InternalService] Supplier archive error:', err);
+      return req.error(500, `Failed to archive supplier: ${err.message}`);
+    }
+  });
+
+  // -------------------------
+  // Restore Supplier
+  // -------------------------
+  this.on('restoreSupplier', async (req) => {
+    try {
+      const { supplierId } = req.data;
+      
+      if (!supplierId) {
+        return req.error(400, 'Supplier ID is required');
+      }
+
+      // Check if supplier exists
+      const supplier = await SELECT.one.from(Suppliers).where({ ID: supplierId });
+      if (!supplier) {
+        return req.error(404, 'Supplier not found');
+      }
+
+      // Restore supplier
+      await UPDATE(Suppliers, supplierId).set({
+        isActive: true,
+        archivedAt: null,
+        archivedBy: null
+      });
+
+      console.log(`[InternalService] Restored supplier ${supplierId}`);
+
+      return {
+        success: true,
+        message: 'Supplier restored successfully'
+      };
+    } catch (err) {
+      console.error('[InternalService] Supplier restore error:', err);
+      return req.error(500, `Failed to restore supplier: ${err.message}`);
+    }
+  });
+
+  // -------------------------
+  // Cancel Order (Soft Delete)
+  // -------------------------
+  this.on('cancelOrder', async (req) => {
+    try {
+      const { orderId, reason } = req.data;
+      
+      if (!orderId) {
+        return req.error(400, 'Order ID is required');
+      }
+
+      // Check if order exists
+      const order = await SELECT.one.from(Orders).where({ ID: orderId });
+      if (!order) {
+        return req.error(404, 'Order not found');
+      }
+
+      if (order.status === 'CANCELLED') {
+        return req.error(400, 'Order is already cancelled');
+      }
+
+      // Cancel order
+      await UPDATE(Orders, orderId).set({
+        status: 'CANCELLED',
+        cancelledAt: new Date(),
+        cancelledBy: req.user?.id || 'admin',
+        cancellationReason: reason || 'No reason provided'
+      });
+
+      // Revoke all active tokens for this order
+      await UPDATE(AccessTokens)
+        .set({ revoked: true, revokedAt: new Date(), revokedBy: req.user?.id || 'admin' })
+        .where({ order_ID: orderId, revoked: false });
+
+      console.log(`[InternalService] Cancelled order ${orderId}`);
+
+      return {
+        success: true,
+        message: 'Order cancelled successfully'
+      };
+    } catch (err) {
+      console.error('[InternalService] Order cancellation error:', err);
+      return req.error(500, `Failed to cancel order: ${err.message}`);
+    }
+  });
+
+  // -------------------------
+  // Restore Order
+  // -------------------------
+  this.on('restoreOrder', async (req) => {
+    try {
+      const { orderId } = req.data;
+      
+      if (!orderId) {
+        return req.error(400, 'Order ID is required');
+      }
+
+      // Check if order exists
+      const order = await SELECT.one.from(Orders).where({ ID: orderId });
+      if (!order) {
+        return req.error(404, 'Order not found');
+      }
+
+      if (order.status !== 'CANCELLED') {
+        return req.error(400, 'Only cancelled orders can be restored');
+      }
+
+      // Restore order to PENDING status
+      await UPDATE(Orders, orderId).set({
+        status: 'PENDING',
+        cancelledAt: null,
+        cancelledBy: null,
+        cancellationReason: null
+      });
+
+      console.log(`[InternalService] Restored order ${orderId}`);
+
+      return {
+        success: true,
+        message: 'Order restored successfully'
+      };
+    } catch (err) {
+      console.error('[InternalService] Order restore error:', err);
+      return req.error(500, `Failed to restore order: ${err.message}`);
+    }
+  });
+
+  // -------------------------
   // Email Integration
   // -------------------------
   this.on('sendVerificationEmail', async (req) => {

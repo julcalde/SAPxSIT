@@ -18,6 +18,9 @@ entity Suppliers : cuid {
   supplierID: String(50) @assert.unique @mandatory;
   name: String(100);
   email: String(100);
+  isActive: Boolean default true; // Soft delete flag
+  archivedAt: DateTime;
+  archivedBy: String(100);
   
   // One-to-many relationship with orders
   orders: Association to many Orders on orders.supplier = $self;
@@ -29,7 +32,10 @@ entity Suppliers : cuid {
 entity Orders : cuid {
   orderNumber: String(50);
   createdAt: DateTime;
-  status: String(20) default 'PENDING'; // PENDING, LINK_SENT, VIEWED, CONFIRMED
+  status: String(20) default 'PENDING'; // PENDING, LINK_SENT, VIEWED, CONFIRMED, CANCELLED
+  cancelledAt: DateTime;
+  cancelledBy: String(100);
+  cancellationReason: String(500);
   deliveryConfirmedAt: DateTime;
   deliveryNotes: String(500);
   

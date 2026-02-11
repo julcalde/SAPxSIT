@@ -35,6 +35,24 @@ service InternalService {
     verifyUrl: String;
   };
   
+  // Soft delete actions
+  action archiveSupplier(supplierId: UUID) returns {
+    success: Boolean;
+    message: String;
+  };
+  action restoreSupplier(supplierId: UUID) returns {
+    success: Boolean;
+    message: String;
+  };
+  action cancelOrder(orderId: UUID, reason: String) returns {
+    success: Boolean;
+    message: String;
+  };
+  action restoreOrder(orderId: UUID) returns {
+    success: Boolean;
+    message: String;
+  };
+  
   // Document management
   action updateDocumentStatus(documentID: UUID, statusCode: String, feedback: String) returns String;
 }

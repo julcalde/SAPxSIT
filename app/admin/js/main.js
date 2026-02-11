@@ -11,7 +11,11 @@ import {
   getDocumentDownloadUrl,
   uploadDocumentContent,
   createDocumentForOrder,
-  deleteDocument
+  deleteDocument,
+  archiveSupplier,
+  restoreSupplier,
+  cancelOrder,
+  restoreOrder
 } from './api.js';
 
 import { 
@@ -28,24 +32,27 @@ import {
 
 let currentOrders = [];
 let currentSuppliers = [];
+let showArchivedSuppliers = false;
+let showCancelledOrders = false;
 
 async function init() {
   try {
     // Fetch and render suppliers
     currentSuppliers = await fetchSuppliers();
-    renderSuppliers(currentSuppliers);
+    renderFilteredSuppliers();
     
     // Populate supplier dropdown
     populateSupplierDropdown(currentSuppliers);
 
     // Fetch and render orders
     currentOrders = await fetchOrders();
-    renderOrders(currentOrders);
+    renderFilteredOrders();
 
     // Wire up event handlers
     wireCreateSupplier();
     wireCreateOrder();
     wireDocumentUpload();
+    wireFilters();
 
     showMessage('Data loaded successfully', 'success');
   } catch (error) {
@@ -54,13 +61,51 @@ async function init() {
   }
 }
 
+// Filter rendering
+function renderFilteredSuppliers() {
+  const filtered = showArchivedSuppliers 
+    ? currentSuppliers 
+    : currentSuppliers.filter(s => s.isActive !== false);
+  renderSuppliers(filtered);
+}
+
+function renderFilteredOrders() {
+  const filtered = showCancelledOrders
+    ? currentOrders
+    : currentOrders.filter(o => o.status !== 'CANCELLED');
+  renderOrders(filtered);
+}
+
+// Wire filter checkboxes
+function wireFilters() {
+  const supplierCheckbox = document.getElementById('showArchivedSuppliers');
+  const orderCheckbox = document.getElementById('showCancelledOrders');
+  
+  if (supplierCheckbox) {
+    supplierCheckbox.addEventListener('change', (e) => {
+      showArchivedSuppliers = e.target.checked;
+      renderFilteredSuppliers();
+    });
+  }
+  
+  if (orderCheckbox) {
+    orderCheckbox.addEventListener('change', (e) => {
+      showCancelledOrders = e.target.checked;
+      renderFilteredOrders();
+    });
+  }
+}
+
 // Populate supplier dropdown
 function populateSupplierDropdown(suppliers) {
   const select = document.getElementById('supplierSelect');
   if (!select) return;
   
+  // Only show active suppliers in dropdown
+  const activeSuppliers = suppliers.filter(s => s.isActive !== false);
+  
   select.innerHTML = '<option value="">-- Choose Supplier --</option>';
-  suppliers.forEach(s => {
+  activeSuppliers.forEach(s => {
     const option = document.createElement('option');
     option.value = s.ID;
     option.textContent = `${s.name} (${s.email})`;
@@ -98,7 +143,7 @@ function wireCreateSupplier() {
       
       // Refresh suppliers
       currentSuppliers = await fetchSuppliers();
-      renderSuppliers(currentSuppliers);
+      renderFilteredSuppliers();
       populateSupplierDropdown(currentSuppliers);
       
       showMessage('Supplier created successfully!', 'success');
@@ -108,6 +153,46 @@ function wireCreateSupplier() {
     }
   });
 }
+
+// Archive Supplier Handler
+window.handleArchiveSupplier = async function(supplierId) {
+  if (!confirm('Archive this supplier? This will hide them from active lists. They can be restored later.')) {
+    return;
+  }
+  
+  try {
+    showMessage('Archiving supplier...', 'info');
+    await archiveSupplier(supplierId);
+    
+    // Refresh suppliers
+    currentSuppliers = await fetchSuppliers();
+    renderFilteredSuppliers();
+    populateSupplierDropdown(currentSuppliers);
+    
+    showMessage('Supplier archived successfully!', 'success');
+  } catch (error) {
+    console.error('Archive supplier error:', error);
+    showMessage(error.message, 'error');
+  }
+};
+
+// Restore Supplier Handler
+window.handleRestoreSupplier = async function(supplierId) {
+  try {
+    showMessage('Restoring supplier...', 'info');
+    await restoreSupplier(supplierId);
+    
+    // Refresh suppliers
+    currentSuppliers = await fetchSuppliers();
+    renderFilteredSuppliers();
+    populateSupplierDropdown(currentSuppliers);
+    
+    showMessage('Supplier restored successfully!', 'success');
+  } catch (error) {
+    console.error('Restore supplier error:', error);
+    showMessage(error.message, 'error');
+  }
+};
 
 // Create Order + Token Handler
 function wireCreateOrder() {
@@ -140,7 +225,7 @@ function wireCreateOrder() {
       
       // Refresh orders
       currentOrders = await fetchOrders();
-      renderOrders(currentOrders);
+      renderFilteredOrders();
       
       showMessage('Order and verification link created!', 'success');
     } catch (e) {
@@ -149,6 +234,51 @@ function wireCreateOrder() {
     }
   });
 }
+
+// Cancel Order Handler
+window.handleCancelOrder = async function(orderId) {
+  const reason = prompt('Enter cancellation reason (optional):');
+  
+  if (reason === null) {
+    // User clicked cancel
+    return;
+  }
+  
+  try {
+    showMessage('Cancelling order...', 'info');
+    await cancelOrder(orderId, reason || 'Cancelled by admin');
+    
+    // Refresh orders
+    currentOrders = await fetchOrders();
+    renderFilteredOrders();
+    
+    showMessage('Order cancelled successfully!', 'success');
+  } catch (error) {
+    console.error('Cancel order error:', error);
+    showMessage(error.message, 'error');
+  }
+};
+
+// Restore Order Handler
+window.handleRestoreOrder = async function(orderId) {
+  if (!confirm('Restore this cancelled order?')) {
+    return;
+  }
+  
+  try {
+    showMessage('Restoring order...', 'info');
+    await restoreOrder(orderId);
+    
+    // Refresh orders
+    currentOrders = await fetchOrders();
+    renderFilteredOrders();
+    
+    showMessage('Order restored successfully!', 'success');
+  } catch (error) {
+    console.error('Restore order error:', error);
+    showMessage(error.message, 'error');
+  }
+};
 
 // Generate Link Handler
 window.handleGenerateLink = async function(orderID) {
@@ -180,7 +310,7 @@ window.handleSendEmail = async function(orderID) {
     
     // Refresh orders to show updated status
     currentOrders = await fetchOrders();
-    renderOrders(currentOrders);
+    renderFilteredOrders();
   } catch (error) {
     console.error('Send email error:', error);
     showMessage(error.message, 'error');

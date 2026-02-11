@@ -37,19 +37,33 @@ export function renderSuppliers(suppliers) {
   if (!suppliers || suppliers.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="3" class="px-6 py-4 text-sm text-gray-500 text-center">No suppliers found</td>
+        <td colspan="5" class="px-6 py-4 text-sm text-gray-500 text-center">No suppliers found</td>
       </tr>
     `;
     return;
   }
 
-  tbody.innerHTML = suppliers.map(supplier => `
-    <tr class="hover:bg-gray-50">
-      <td class="px-6 py-4 text-sm text-gray-900">${escapeHtml(supplier.supplierID || supplier.ID)}</td>
-      <td class="px-6 py-4 text-sm text-gray-900">${escapeHtml(supplier.name || '—')}</td>
-      <td class="px-6 py-4 text-sm text-gray-500">${escapeHtml(supplier.email || '—')}</td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = suppliers.map(supplier => {
+    const isArchived = supplier.isActive === false;
+    const rowClass = isArchived ? 'bg-gray-50 opacity-60' : 'hover:bg-gray-50';
+    const statusBadge = isArchived 
+      ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Archived</span>'
+      : '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>';
+    
+    const actionButton = isArchived
+      ? `<button onclick="window.handleRestoreSupplier('${supplier.ID}')" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200">Restore</button>`
+      : `<button onclick="window.handleArchiveSupplier('${supplier.ID}')" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-gray-700 bg-gray-100 hover:bg-gray-200">Archive</button>`;
+
+    return `
+      <tr class="${rowClass}">
+        <td class="px-6 py-4 text-sm text-gray-900">${escapeHtml(supplier.supplierID || supplier.ID)}</td>
+        <td class="px-6 py-4 text-sm text-gray-900">${escapeHtml(supplier.name || '—')}</td>
+        <td class="px-6 py-4 text-sm text-gray-500">${escapeHtml(supplier.email || '—')}</td>
+        <td class="px-6 py-4 text-sm">${statusBadge}</td>
+        <td class="px-6 py-4 text-sm text-right">${actionButton}</td>
+      </tr>
+    `;
+  }).join('');
 }
 
 export function renderOrders(orders, onGenerateLink, onSendEmail, onViewDocuments) {
@@ -70,18 +84,32 @@ export function renderOrders(orders, onGenerateLink, onSendEmail, onViewDocument
       'PENDING': 'bg-yellow-100 text-yellow-800',
       'LINK_SENT': 'bg-blue-100 text-blue-800',
       'VIEWED': 'bg-purple-100 text-purple-800',
-      'CONFIRMED': 'bg-green-100 text-green-800'
+      'CONFIRMED': 'bg-green-100 text-green-800',
+      'CANCELLED': 'bg-red-100 text-red-800'
     };
     
     const statusClass = statusColors[order.status] || 'bg-gray-100 text-gray-800';
+    const isCancelled = order.status === 'CANCELLED';
+    const rowClass = isCancelled ? 'bg-gray-50 opacity-60' : 'hover:bg-gray-50';
     
     const deliveryInfo = order.status === 'CONFIRMED' && order.deliveryConfirmedAt
       ? `<div class="text-xs text-gray-500 mt-1">${new Date(order.deliveryConfirmedAt).toLocaleDateString()}</div>
          ${order.deliveryNotes ? `<div class="text-xs text-gray-500 italic">${escapeHtml(order.deliveryNotes)}</div>` : ''}`
+      : isCancelled && order.cancelledAt
+      ? `<div class="text-xs text-gray-500 mt-1">Cancelled: ${new Date(order.cancelledAt).toLocaleDateString()}</div>
+         ${order.cancellationReason ? `<div class="text-xs text-gray-500 italic">${escapeHtml(order.cancellationReason)}</div>` : ''}`
       : '<span class="text-sm text-gray-400">—</span>';
 
+    const actionButtons = isCancelled
+      ? `<button onclick="window.handleRestoreOrder('${order.ID}')" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200">Restore</button>`
+      : `<button onclick="window.handleGenerateLink('${order.ID}')" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200">Generate Link</button>
+         <button onclick="window.handleSendEmail('${order.ID}')" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200">Send Email</button>
+         <button onclick="window.handleViewDocuments('${order.ID}', '${escapeHtml(order.orderNumber || order.ID)}')" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200">View Documents</button>
+         <button onclick="window.handleUploadDocument('${order.ID}')" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-purple-700 bg-purple-100 hover:bg-purple-200" title="Upload PDF">📄 Upload</button>
+         <button onclick="window.handleCancelOrder('${order.ID}')" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200">Cancel</button>`;
+
     return `
-      <tr class="hover:bg-gray-50">
+      <tr class="${rowClass}">
         <td class="px-6 py-4 text-sm text-gray-900">${escapeHtml(order.orderNumber || order.ID)}</td>
         <td class="px-6 py-4 text-sm text-gray-500">${escapeHtml(order.supplier?.name || '—')}</td>
         <td class="px-6 py-4 text-sm">
@@ -91,31 +119,7 @@ export function renderOrders(orders, onGenerateLink, onSendEmail, onViewDocument
         </td>
         <td class="px-6 py-4 text-sm">${deliveryInfo}</td>
         <td class="px-6 py-4 text-sm text-right space-x-2">
-          <button 
-            onclick="window.handleGenerateLink('${order.ID}')"
-            class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-          >
-            Generate Link
-          </button>
-          <button 
-            onclick="window.handleSendEmail('${order.ID}')"
-            class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200"
-          >
-            Send Email
-          </button>
-          <button 
-            onclick="window.handleViewDocuments('${order.ID}', '${escapeHtml(order.orderNumber || order.ID)}')"
-            class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200"
-          >
-            View Documents
-          </button>
-          <button 
-            onclick="window.handleUploadDocument('${order.ID}')"
-            class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-purple-700 bg-purple-100 hover:bg-purple-200"
-            title="Upload PDF"
-          >
-            📄 Upload
-          </button>
+          ${actionButtons}
         </td>
       </tr>
     `;

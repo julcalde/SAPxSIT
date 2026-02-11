@@ -175,3 +175,55 @@ export async function deleteDocument(docID) {
   if (!response.ok) throw new Error(`deleteDocument failed: ${response.status}`);
   return true;
 }
+
+export async function archiveSupplier(supplierId) {
+  const response = await fetch(`${SERVICE_URL}/archiveSupplier`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ supplierId })
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to archive supplier: ${response.status} - ${errorText}`);
+  }
+  return await response.json();
+}
+
+export async function restoreSupplier(supplierId) {
+  const response = await fetch(`${SERVICE_URL}/restoreSupplier`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ supplierId })
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to restore supplier: ${response.status} - ${errorText}`);
+  }
+  return await response.json();
+}
+
+export async function cancelOrder(orderId, reason) {
+  const response = await fetch(`${SERVICE_URL}/cancelOrder`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId, reason: reason || 'Cancelled by admin' })
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to cancel order: ${response.status} - ${errorText}`);
+  }
+  return await response.json();
+}
+
+export async function restoreOrder(orderId) {
+  const response = await fetch(`${SERVICE_URL}/restoreOrder`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId })
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to restore order: ${response.status} - ${errorText}`);
+  }
+  return await response.json();
+}

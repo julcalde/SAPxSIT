@@ -10,17 +10,6 @@ npm start
 
 Server should be accessible at: http://localhost:4004
 
-## Backend Testing (Completed ✅)
-
-All backend functionality has been thoroughly tested:
-- ✅ Token generation and validation
-- ✅ JWT session creation and authorization
-- ✅ Email sending with verification links
-- ✅ Document status updates
-- ✅ Delivery confirmation
-- ✅ Security controls (token reuse prevention, status validation)
-- ✅ File upload with base64 encoding
-
 ## Frontend Testing
 
 ### 1. Admin Panel Testing
@@ -41,11 +30,30 @@ All backend functionality has been thoroughly tested:
    - Order Number (ORD-2026-001, ORD-2026-002)
    - Supplier names
    - Status badges
-   - Action buttons
+   - Action buttons (Generate Link, Send Email, View Documents, Upload)
 
-**Expected**: 2 orders visible with color-coded status
+**Expected**: 2 orders visible with color-coded status and 4 action buttons each
 
-#### Test 1.3: Generate Secure Link
+#### Test 1.3: Create New Supplier
+1. Find "Create New Supplier" form at top of page
+2. Fill in:
+   - Name: "New Test Corp"
+   - Email: "contact@newtest.com"
+3. Click "Create Supplier"
+4. Verify success message appears
+5. Check supplier dropdown is updated
+
+**Expected**: New supplier created with auto-generated ID (SUP-XXXXXXXX format)
+
+#### Test 1.4: Create Order with Verification Link
+1. Find "Create Order with Verification Link" section
+2. Select a supplier from dropdown
+3. Click "Create Order" button
+4. Verify green success box appears with verification link
+
+**Expected**: Order created, token generated, verification URL displayed immediately
+
+#### Test 1.5: Generate Secure Link
 1. Click "Generate Link" for ORD-2026-001
 2. Verify modal appears with:
    - Full verification URL
@@ -59,14 +67,14 @@ All backend functionality has been thoroughly tested:
 http://localhost:4004/service/verify/verifyAndRedirect?token=[64-char-hex]&redirect=/app/external/index.html
 ```
 
-#### Test 1.4: Send Verification Email
+#### Test 1.6: Send Verification Email
 1. Click "Send Email" for an order
 2. Check console or email inbox
 3. Verify email sent with secure link
 
 **Expected**: Email delivered with professional HTML template
 
-#### Test 1.5: View Documents
+#### Test 1.7: View Documents
 1. Click "View Documents" for ORD-2026-001
 2. Verify documents section appears with:
    - Document list table
@@ -75,7 +83,31 @@ http://localhost:4004/service/verify/verifyAndRedirect?token=[64-char-hex]&redir
 
 **Expected**: 2 documents shown (DOC-001, DOC-002) with different statuses
 
-#### Test 1.6: Update Document Status
+#### Test 1.8: Upload Document (Admin)
+1. In orders table, click "📄 Upload" button for an order
+2. Select a PDF file from your computer
+3. Wait for upload to complete
+4. Click "View Documents" for that order
+5. Verify new document appears in list
+
+**Expected**: Document uploaded successfully, appears with "pending" status and "admin" as uploader
+
+#### Test 1.9: Download Document (Admin)
+1. In documents view, locate a document row
+2. Click the "⬇" (download) button
+3. Verify browser downloads the file
+
+**Expected**: PDF file downloads with correct filename
+
+#### Test 1.10: Delete Document (Admin)
+1. In documents view, click "🗑" (delete) button for a document
+2. Confirm deletion in dialog
+3. Verify success message
+4. Verify document removed from list
+
+**Expected**: Document deleted successfully, list updated
+
+#### Test 1.11: Update Document Status
 1. In documents view, click "Update Status" for DOC-001 (pending)
 2. Verify modal appears with:
    - Status dropdown (approved/rejected/pending)
@@ -120,7 +152,14 @@ http://localhost:4004/service/verify/verifyAndRedirect?token=[64-char-hex]&redir
 
 **Expected**: Documents displayed with proper formatting and status
 
-#### Test 2.4: Confirm Delivery
+#### Test 2.4: Download Document (Supplier)
+1. Locate a document in the table
+2. Click "⬇ Download" button in Actions column
+3. Verify file downloads
+
+**Expected**: PDF downloads successfully with original filename
+
+#### Test 2.5: Confirm Delivery
 1. Find "Confirm Delivery" form section
 2. Fill in:
    - Delivery Date: Select today's date
@@ -133,7 +172,7 @@ http://localhost:4004/service/verify/verifyAndRedirect?token=[64-char-hex]&redir
 - Order status changes to "CONFIRMED"
 - Delivery date and notes now visible in order info
 
-#### Test 2.5: Upload Document
+#### Test 2.6: Upload Document
 1. In documents section, click "Upload Document" button
 2. Select a PDF or image file (< 10MB)
 3. Click upload
@@ -143,13 +182,13 @@ http://localhost:4004/service/verify/verifyAndRedirect?token=[64-char-hex]&redir
 - New document appears in table with "pending" status
 - File saved in `/uploads` directory
 
-#### Test 2.6: Invalid File Upload
+#### Test 2.7: Invalid File Upload
 1. Try uploading a .txt or .docx file
 2. Verify error message: "Invalid file type"
 
 **Expected**: Upload rejected, error message shown
 
-#### Test 2.7: Token Expiration
+#### Test 2.8: Token Expiration
 1. Wait 15+ minutes with the same link
 2. Try to generate a new link for the same order
 3. Try to access the old link again
@@ -199,9 +238,30 @@ http://localhost:4004/service/verify/verifyAndRedirect?token=[64-char-hex]&redir
 
 **Expected**: Modified JWT rejected with 401 Unauthorized
 
-### 5. API Testing (CLI)
+## Backend Testing
 
-#### Test 5.1: Generate Link via API
+### 1. API Testing (CLI)
+
+#### Test 1.1: Create Supplier via API
+```bash
+curl -X POST http://localhost:4004/service/internal/createSupplier \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Test Supplier Inc", "email": "test@supplier.com"}' | jq '.'
+```
+
+**Expected**: Returns supplier object with auto-generated supplierID (SUP-XXXXXXXX format)
+
+#### Test 1.2: Create Order + Token via API
+```bash
+# Use supplier ID from previous response
+curl -X POST http://localhost:4004/service/internal/createOrderAndToken \
+  -H "Content-Type: application/json" \
+  -d '{"supplierId": "d94ce370-8aeb-4a78-9ecd-d623724b7107"}' | jq '.'
+```
+
+**Expected**: Returns orderId, token, and verifyUrl in single response
+
+#### Test 1.3: Generate Link via API
 ```bash
 curl -X POST http://localhost:4004/service/internal/generateSecureLink \
   -H "Content-Type: application/json" \
@@ -210,7 +270,7 @@ curl -X POST http://localhost:4004/service/internal/generateSecureLink \
 
 **Expected**: Returns token, verifyUrl, expiresAt
 
-#### Test 5.2: Verify Token
+#### Test 1.4: Verify Token
 ```bash
 # Use token from previous response
 curl -v "http://localhost:4004/service/verify/verifyAndRedirect?token=[TOKEN]&redirect=/app/external/index.html" 2>&1 | grep "Set-Cookie"
@@ -218,7 +278,7 @@ curl -v "http://localhost:4004/service/verify/verifyAndRedirect?token=[TOKEN]&re
 
 **Expected**: Sets `external_session` cookie with JWT
 
-#### Test 5.3: Access External Service
+#### Test 1.5: Access External Service
 ```bash
 # Use JWT from cookie
 JWT="[JWT_VALUE]"
@@ -228,7 +288,7 @@ curl -s http://localhost:4004/service/external/Orders \
 
 **Expected**: Returns only the order associated with the JWT
 
-#### Test 5.4: Confirm Delivery via API
+#### Test 1.6: Confirm Delivery via API
 ```bash
 JWT="[JWT_VALUE]"
 curl -X POST http://localhost:4004/service/external/confirmDelivery \
@@ -239,9 +299,53 @@ curl -X POST http://localhost:4004/service/external/confirmDelivery \
 
 **Expected**: Returns `{"success": true, "message": "Delivery confirmed successfully"}`
 
+#### Test 1.7: Update Document Status via API
+```bash
+curl -X POST http://localhost:4004/service/internal/updateDocumentStatus \
+  -H "Content-Type: application/json" \
+  -d '{"documentID": "doc-uuid", "statusCode": "approved", "feedback": "Looks good"}' | jq '.'
+```
+
+**Expected**: Returns success message
+
+### 2. Backend Service Testing
+
+All backend functionality has been thoroughly tested:
+- ✅ Token generation and validation
+- ✅ JWT session creation and authorization
+- ✅ Email sending with verification links
+- ✅ Document status updates
+- ✅ Delivery confirmation
+- ✅ Security controls (token reuse prevention, status validation)
+- ✅ File upload with base64 encoding
+- ✅ Supplier creation
+- ✅ Order + token creation in single action
+- ✅ Token expiration (42h 13m 37s)
+- ✅ Token revocation capability
+- ✅ Admin notifications on delivery confirmation
+
 ## Test Results Summary
 
+### Frontend (To Be Tested)
+- [ ] Admin Panel UI
+- [ ] Supplier Creation Form
+- [ ] Order + Token Creation Button
+- [ ] Link Generation Modal
+- [ ] Email Sending
+- [ ] Document Management
+- [ ] PDF Upload (Admin)
+- [ ] PDF Download (Admin)
+- [ ] PDF Delete (Admin)
+- [ ] External Supplier Page
+- [ ] Order Details Display
+- [ ] Delivery Confirmation Form
+- [ ] Document Upload (Supplier)
+- [ ] PDF Download (Supplier)
+- [ ] Status Updates
+
 ### Backend (All Passed ✅)
+- [x] Supplier Creation API
+- [x] Order + Token Creation API
 - [x] Token Generation Service
 - [x] JWT Session Management
 - [x] Email Service Integration
@@ -249,17 +353,8 @@ curl -X POST http://localhost:4004/service/external/confirmDelivery \
 - [x] Delivery Confirmation
 - [x] Security Controls
 - [x] File Upload Handling
-
-### Frontend (To Be Tested)
-- [ ] Admin Panel UI
-- [ ] Link Generation Modal
-- [ ] Email Sending
-- [ ] Document Management
-- [ ] External Supplier Page
-- [ ] Order Details Display
-- [ ] Delivery Confirmation Form
-- [ ] Document Upload
-- [ ] Status Updates
+- [x] PDF Download URLs
+- [x] Document Deletion
 
 ### Security (To Be Tested)
 - [ ] Token Expiration
