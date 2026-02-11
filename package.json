@@ -1,17 +1,19 @@
 {
-  "name": "supplier-onboarding",
+  "name": "unified-supplier-management",
   "version": "1.0.0",
-  "description": "SAP BTP Supplier Self-Onboarding Solution with CAP",
+  "description": "Unified Supplier Management System with Secure Tokenized Access",
   "repository": "<Add your repository here>",
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@sap/cds": "^8",
+    "@sap/cds": "^9",
     "express": "^4",
-    "jsonwebtoken": "^9"
+    "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^8.0.1",
+    "crypto": "^1.0.1"
   },
   "devDependencies": {
-    "@cap-js/sqlite": "^1",
+    "@cap-js/sqlite": "^2",
     "@sap/cds-dk": "^9",
     "chai": "^4",
     "mocha": "^10"
@@ -29,7 +31,14 @@
           "database": "db.sqlite"
         }
       },
-      "auth": "dummy"
+      "auth": {
+        "[development]": {
+          "kind": "dummy"
+        },
+        "[production]": {
+          "kind": "xsuaa"
+        }
+      }
     }
   }
 }
