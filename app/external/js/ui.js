@@ -18,84 +18,46 @@ function formatDate(iso) {
 
 export function renderLoading(container) {
   container.innerHTML = `
-    <div class="loading">
-      <span>Loading</span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-    </div>
+    <tr>
+      <td colspan="6">
+        <div class="loading">
+          <span>Loading</span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </td>
+    </tr>
   `;
 }
 
-export function renderPurchases(container, purchases) {
-  container.innerHTML = purchases
-    .map((p) => {
-      const productName = p.product?.name ?? "—";
-      const qty = p.quantity ?? "—";
-      const date = formatDate(p.date);
-      return `
-        <tr>
-          <td>${escapeHtml(productName)}</td>
-          <td>${escapeHtml(qty)}</td>
-          <td>${escapeHtml(date)}</td>
-        </tr>
-      `;
-    })
-    .join("");
-
-  if (!purchases.length) {
-    container.innerHTML = `
-      <tr><td colspan="3">No purchases found.</td></tr>
-    `;
-  }
-}
-
-export function renderProducts(container, products) {
-  container.innerHTML = products
-    .map((p) => {
-      const price = p.price ?? "—";
-      const currency = p.Currency ?? "—";
-      return `
-        <tr>
-          <td>${escapeHtml(p.name ?? "—")}</td>
-          <td>${escapeHtml(price)}</td>
-          <td>${escapeHtml(currency)}</td>
-        </tr>
-      `;
-    })
-    .join("");
-
-  if (!products.length) {
-    container.innerHTML = `
-      <tr><td colspan="3">No products found.</td></tr>
-    `;
-  }
-}
-
-export function renderMangel(container, mangel) {
+export function renderItems(container, mangel, deliveredOn) {
+  const deliveredLabel = formatDate(deliveredOn);
   container.innerHTML = mangel
     .map((m) => {
       const productName = m.product?.name ?? "—";
-      const ist = m.istQuantity ?? "—";
-      const diff = m.differenceQuantity ?? "—";
+      const orderedQty = m.purchase?.quantity ?? "—";
+      const deliveredQty = m.istQuantity ?? "—";
       const declinedQty = m.DeclinedQuantity ?? "—";
       const declinedReason = m.DeclinedReason ?? "—";
 
       return `
-        <div class="mangel-row">
-          <div class="mangel-meta">
-            <div><strong>${escapeHtml(productName)}</strong></div>
-            <div class="pill">Ist: ${escapeHtml(ist)} • Diff: ${escapeHtml(diff)}</div>
-            <div class="pill">Declined Qty: ${escapeHtml(declinedQty)}</div>
-            <div class="pill">Reason: ${escapeHtml(declinedReason)}</div>
-          </div>
-        </div>
+        <tr>
+          <td>${escapeHtml(productName)}</td>
+          <td>${escapeHtml(orderedQty)}</td>
+          <td>${escapeHtml(deliveredLabel)}</td>
+          <td>${escapeHtml(deliveredQty)}</td>
+          <td>${escapeHtml(declinedQty)}</td>
+          <td>${escapeHtml(declinedReason)}</td>
+        </tr>
       `;
     })
     .join("");
 
   if (!mangel.length) {
-    container.innerHTML = `<div>No mangel records found.</div>`;
+    container.innerHTML = `
+      <tr><td colspan="6">No items found.</td></tr>
+    `;
   }
 }
 

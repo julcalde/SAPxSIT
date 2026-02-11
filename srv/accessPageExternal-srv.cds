@@ -36,6 +36,13 @@ service accessPageExternalSrv {
     linkInUse
   };
 
+  entity Delivery as projection on my.Delivery {
+    ID,
+    orderId,
+    deliveryCompleted,
+    delivered_on
+  };
+
   entity Order as projection on my.Order {
     ID,
     buyer,

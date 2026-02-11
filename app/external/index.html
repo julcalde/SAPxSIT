@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Delivery Access</title>
+    <title>Delivery Note</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -90,18 +90,6 @@
         margin: 0 auto;
       }
 
-      .grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 18px;
-      }
-
-      @media (min-width: 960px) {
-        .grid {
-          grid-template-columns: 1.2fr 1fr;
-        }
-      }
-
       .card {
         background: var(--card);
         border: 1px solid var(--line);
@@ -129,33 +117,10 @@
         font-size: 14px;
       }
 
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        padding: 2px 8px;
-        border-radius: 999px;
+      .table thead th {
         font-size: 12px;
-        background: #eef6f8;
-        color: var(--accent);
-      }
-
-      .mangel-row {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 10px;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid var(--line);
-      }
-
-      .mangel-row:last-child {
-        border-bottom: none;
-      }
-
-      .mangel-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
       }
 
       .btn {
@@ -218,7 +183,7 @@
   <body>
     <header>
       <div>
-        <h1>Delivery Access</h1>
+        <h1>Delivery Note</h1>
         <div class="sub">Review the declined quantities and confirm the order.</div>
       </div>
       <div class="order-meta">
@@ -229,41 +194,23 @@
     </header>
 
     <div class="wrap">
-      <div class="grid">
-        <section class="card">
-          <h2>Purchases</h2>
-          <table class="table" id="purchasesTable">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody id="purchasesBody"></tbody>
-          </table>
-        </section>
-
-        <section class="card">
-          <h2>Mangel Details</h2>
-          <div id="mangelList"></div>
-          <button class="btn" id="confirmBtn">Confirm</button>
-          <div class="status" id="mangelStatus"></div>
-        </section>
-      </div>
-
-      <section class="card" style="margin-top: 18px;">
-        <h2>Products</h2>
-        <table class="table" id="productsTable">
+      <section class="card">
+        <h2>Items</h2>
+        <table class="table" id="itemsTable">
           <thead>
             <tr>
               <th>Product</th>
-              <th>Price</th>
-              <th>Currency</th>
+              <th>Ordered Quantity</th>
+              <th>Delivery Completed Date</th>
+              <th>Delivered Quantity</th>
+              <th>Declined Quantity</th>
+              <th>Declined Reason</th>
             </tr>
           </thead>
-          <tbody id="productsBody"></tbody>
+          <tbody id="itemsBody"></tbody>
         </table>
+        <button class="btn" id="confirmBtn">Confirm</button>
+        <div class="status" id="mangelStatus"></div>
       </section>
     </div>
 

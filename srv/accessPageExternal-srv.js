@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 module.exports = cds.service.impl(function() {
-  const { Products, Purchases, Mangel } = this.entities;
+  const { Products, Purchases, Mangel, Delivery } = this.entities;
 
   function parseCookies(cookieHeader) {
     if (!cookieHeader) return {};
@@ -69,6 +69,12 @@ module.exports = cds.service.impl(function() {
     req.query.where([
       { ref: ['purchase', 'orderId_ID'] }, '=', { val: orderID }
     ]);
+  });
+
+  this.before('READ', Delivery, (req) => {
+    const orderID = requireOrderID(req);
+    if (!orderID) return;
+    req.query.where({ orderId_ID: orderID });
   });
 
   this.before('READ', Products, (req) => {

@@ -20,19 +20,14 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-export async function fetchPurchases() {
-  const data = await request("/Purchases?$expand=product");
-  return data.value || [];
-}
-
 export async function fetchMangel() {
   const data = await request("/Mangel?$expand=product,purchase");
   return data.value || [];
 }
 
-export async function fetchProducts() {
-  const data = await request("/Products");
-  return data.value || [];
+export async function fetchDelivery() {
+  const data = await request("/Delivery?$select=delivered_on&$top=1");
+  return (data.value && data.value[0]) || null;
 }
 
 export async function fetchCurrentOrder() {
