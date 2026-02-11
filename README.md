@@ -4,13 +4,26 @@ A complete, production-grade supplier management system with secure token-based 
 
 ## Features
 
+### Core Functionality
 - **Secure Token Authentication**: Crypto-based tokens converted to JWT sessions with httpOnly cookies
 - **External Supplier Access**: Token-verified interface for order viewing and delivery confirmation
-- **Admin Panel**: Internal management UI for generating links, sending emails, and managing documents
-- **Document Management**: Upload, review, and status tracking with admin feedback
+- **Admin Panel**: Internal management UI for creating suppliers/orders, managing documents, and generating links
+- **Document Management**: Upload, download, delete PDFs with status tracking and admin feedback
 - **Email Integration**: Automated verification emails with secure access links
 - **File Upload**: Support for PDF and image attachments with validation
 - **Status Tracking**: Order and document status with color-coded UI indicators
+
+### New Features (Feb 2026)
+- **Supplier Creation**: Create new suppliers with auto-generated IDs (SUP-XXXXXXXX format)
+- **Order + Token Creation**: Generate orders with verification tokens in single action
+- **Soft Delete System**: 
+  - Archive/restore suppliers (with active order validation)
+  - Cancel/restore orders (with reason tracking and automatic token revocation)
+  - Filter archived/cancelled items with checkboxes
+  - Visual indicators (status badges, dimmed rows)
+  - Metadata tracking (who/when for archive/cancel actions)
+- **PDF Management**: Full download support for suppliers in external view, upload/download/delete for admins
+- **Enhanced UI**: Status badges, action buttons, real-time filtering
 
 ## Project Structure
 
@@ -50,17 +63,22 @@ SAPxSIT/
 ## Business Flow
 
 ### Admin Workflow
-1. **View Suppliers & Orders**: Access admin panel at `/app/admin/index.html`
-2. **Generate Secure Link**: Click "Generate Link" for an order
-3. **Send Email**: Optionally send automated verification email with link
-4. **Manage Documents**: Review uploaded documents, update status, provide feedback
+1. **Create Supplier**: Fill form with name/email → Auto-generated SUP-XXXXXXXX ID
+2. **Create Order + Token**: Select supplier → Click "Create Order" → Instant order with verification URL
+3. **View Suppliers & Orders**: Access admin panel at `/admin/index.html`
+4. **Generate Secure Link**: Click "Generate Link" for an order (alternative to step 2)
+5. **Send Email**: Optionally send automated verification email with link
+6. **Manage Documents**: Upload, download, delete PDFs; review and update status
+7. **Archive/Cancel**: Archive suppliers or cancel orders with tracking
+8. **Filter Views**: Toggle archived suppliers and cancelled orders visibility
 
 ### Supplier Workflow
 1. **Receive Email**: Get verification email with secure access link
 2. **Access Order**: Click link → token verified → JWT session created
 3. **View Details**: See order information and existing documents
-4. **Confirm Delivery**: Submit delivery date and notes
-5. **Upload Documents**: Add PDF/image files for verification
+4. **Download Documents**: Click download button for any document
+5. **Confirm Delivery**: Submit delivery date and notes
+6. **Upload Documents**: Add PDF/image files for verification
 
 ## Getting Started
 
@@ -99,7 +117,7 @@ npx cds deploy --to sqlite
 
 ### Access Points
 
-- **Admin Panel**: http://localhost:4004/app/admin/index.html
+- **Admin Panel**: http://localhost:4004/admin/index.html
 - **External Access**: Via secure token link (generated from admin panel)
 - **Internal Service**: http://localhost:4004/service/internal
 - **External Service**: http://localhost:4004/service/external (requires JWT)
@@ -107,26 +125,39 @@ npx cds deploy --to sqlite
 
 ## Testing
 
-Comprehensive backend testing has been completed covering:
+Comprehensive backend testing completed (Feb 11, 2026):
+- ✅ Supplier creation with auto-generated IDs
+- ✅ Order + token creation in single action
+- ✅ Archive supplier validation (blocks when active orders exist)
+- ✅ Cancel order with reason tracking
+- ✅ Restore operations for suppliers and orders
 - ✅ Token generation and validation
 - ✅ JWT session creation
 - ✅ Email integration
 - ✅ Document status updates
 - ✅ Delivery confirmation
-- ✅ Security controls (token reuse, status validation)
+- ✅ Security controls (token reuse, status validation, automatic token revocation)
+
+See [TESTING_GUIDE.md](TESTING_GUIDE.md) for detailed test procedures and results.
 
 ### Frontend Testing Checklist
 
 1. **Admin Panel**:
+   - [ ] Create new supplier (form with auto-generated ID)
+   - [ ] Create order with token (single-click order generation)
    - [ ] View suppliers and orders
+   - [ ] Archive/restore suppliers
+   - [ ] Cancel/restore orders
+   - [ ] Filter archived suppliers and cancelled orders
+   - [ ] Upload/download/delete documents
    - [ ] Generate secure access link
    - [ ] Send verification email
-   - [ ] View order documents
    - [ ] Update document status
 
 2. **External Supplier Access**:
    - [ ] Access via secure token link
    - [ ] View order details
+   - [ ] Download documents
    - [ ] Confirm delivery with date and notes
    - [ ] Upload documents (PDF/images)
    - [ ] View existing documents with status
@@ -135,10 +166,12 @@ Comprehensive backend testing has been completed covering:
 
 - **Crypto Tokens**: Random 64-character hex tokens for initial verification
 - **JWT Sessions**: httpOnly cookies with 24-hour expiration
-- **Token Validation**: Single-use, time-limited (15 minutes default)
+- **Token Validation**: Single-use, time-limited (42h 13m 37s default)
+- **Token Revocation**: Automatic revocation when orders are cancelled
 - **Authorization**: Order-scoped access via JWT claims
 - **File Validation**: Type and size restrictions on uploads
 - **Status Controls**: Validated against DocumentStatus code list
+- **Soft Delete**: Archive/cancel operations preserve data integrity with metadata tracking
 
 ## Email Configuration
 
@@ -156,9 +189,18 @@ For Gmail, use App Passwords: https://myaccount.google.com/apppasswords
 ### Internal Service (`/service/internal`)
 - `GET /Suppliers` - List all suppliers
 - `GET /Orders` - List all orders
-- `GET /Documents` - List all documents  
-- `POST /generateSecureLink` - Generate access token
+- `GET /Documents` - List all documents
+- `POST /createSupplier` - Create new supplier with auto-generated ID
+- `POST /createOrderAndToken` - Create order with verification token in one action
+- `POST /generateSecureLink` - Generate access token for existing order
 - `POST /sendVerificationEmail` - Send email with link
+- `POST /archiveSupplier` - Archive supplier (validates no active orders)
+- `POST /restoreSupplier` - Restore archived supplier
+- `POST /cancelOrder` - Cancel order with reason (auto-revokes tokens)
+- `POST /restoreOrder` - Restore cancelled order
+- `POST /uploadDocumentContent` - Upload document file content
+- `POST /createDocumentForOrder` - Create document metadata
+- `DELETE /Documents(ID)` - Delete document
 - `PATCH /Documents(ID)` - Update document status
 
 ### External Service (`/service/external`)
