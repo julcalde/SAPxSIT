@@ -9,4 +9,5 @@ service deliveryTokenVerifySrv {
   };
 
   action verifyToken(token: String) returns VerifyTokenResponse;
+  function verifyAndRedirect(token: String, redirect: String) returns VerifyTokenResponse;
 }

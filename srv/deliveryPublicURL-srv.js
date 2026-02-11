@@ -17,8 +17,10 @@ module.exports = {
   generatePublicUrl: (req, token) => {
     // Prefer configured public base URL (set in Cloud manifest/environment)
     const publicBaseUrl = process.env.PUBLIC_BASE_URL;
+    const redirectPath = process.env.EXTERNAL_APP_URL || '/app/external/index.html';
+    const redirectParam = encodeURIComponent(redirectPath);
     if (publicBaseUrl) {
-    return `${publicBaseUrl}/service/deliveryTokenVerify/verifyToken?token=${token}`;
+      return `${publicBaseUrl}/service/deliveryTokenVerify/verifyAndRedirect?token=${token}&redirect=${redirectParam}`;
     }
 
     // Fall back to forwarded headers from cloud gateway/load-balancer
@@ -35,6 +37,6 @@ module.exports = {
       console.warn('[SECURITY] Non-HTTPS URL generated in production. Set PUBLIC_BASE_URL env var.');
     }
 
-    return `${finalProtocol}://${host}/service/deliveryTokenVerify/verifyToken?token=${token}`;
+    return `${finalProtocol}://${host}/service/deliveryTokenVerify/verifyAndRedirect?token=${token}&redirect=${redirectParam}`;
   }
 };

@@ -5,7 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 const JWT_EXPIRES_IN = '24h'; // 24 hour session
 
 module.exports = cds.service.impl(function () {
-  this.on('verifyToken', async (req) => {
+  async function verifyAndIssueSession(req) {
     // Accept token from body, query, or raw express request
     const token = (req.data && req.data.token)
       || (req.query && req.query.token)
@@ -46,6 +46,31 @@ module.exports = cds.service.impl(function () {
         { expiresIn: JWT_EXPIRES_IN }
       );
 
+      const res = req._ && req._.res;
+      if (res) {
+        const maxAgeMs = 24 * 60 * 60 * 1000;
+        const isProd = process.env.NODE_ENV === 'production';
+        if (typeof res.cookie === 'function') {
+          res.cookie('delivery_session', sessionToken, {
+            httpOnly: true,
+            sameSite: 'Lax',
+            secure: isProd,
+            maxAge: maxAgeMs,
+            path: '/'
+          });
+        } else {
+          const parts = [
+            `delivery_session=${sessionToken}`,
+            'Path=/',
+            'HttpOnly',
+            'SameSite=Lax',
+            `Max-Age=${Math.floor(maxAgeMs / 1000)}`
+          ];
+          if (isProd) parts.push('Secure');
+          res.setHeader('Set-Cookie', parts.join('; '));
+        }
+      }
+
       return {
         success: true,
         orderID: tokenRecord.orderID_ID,
@@ -57,5 +82,24 @@ module.exports = cds.service.impl(function () {
       console.error('deliveryTokenVerify error:', err);
       return req.error(500, 'Token verification failed: ' + err.message);
     }
+  }
+
+  this.on('verifyToken', async (req) => {
+    return verifyAndIssueSession(req);
+  });
+
+  this.on('verifyAndRedirect', async (req) => {
+    const result = await verifyAndIssueSession(req);
+    const redirect =
+      (req.data && req.data.redirect) ||
+      (req.query && req.query.redirect) ||
+      (req._ && req._.req && req._.req.query && req._.req.query.redirect);
+
+    if (redirect && req._ && req._.res && typeof req._.res.redirect === 'function') {
+      req._.res.redirect(302, redirect);
+      return result;
+    }
+
+    return result;
   });
 });

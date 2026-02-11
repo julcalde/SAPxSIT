@@ -34,4 +34,6 @@ service accessPageExternalSrv {
     lastUsed_at,
     linkInUse
   };
+
+  action updateConfirmedQuantity(mangelID: UUID, confirmedQuantity: Integer) returns Mangel;
 }
