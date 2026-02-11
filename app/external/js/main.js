@@ -1,13 +1,65 @@
 // app/external/js/main.js
-import { fetchOrders, fetchDocuments, confirmDelivery, uploadDocument, hasValidSession, getDocumentDownloadUrl } from './api.js';
+import { fetchOrders, fetchDocuments, confirmDelivery, uploadDocument, hasValidSession, downloadDocument } from './api.js';
 import { showMessage, renderOrderInfo, renderDocuments, setLoadingState } from './ui.js';
 
 async function init() {
+  console.log('[External] Page loaded, URL:', window.location.href);
+  
+  // IMPORTANT: Extract and save session token from URL FIRST
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlToken = urlParams.get('sessionToken');
+  
+  console.log('[External] Session token in URL:', urlToken ? 'YES (length: ' + urlToken.length + ')' : 'NO');
+  
+  if (urlToken) {
+    try {
+      // Use localStorage instead of cookies (more reliable for JWT tokens)
+      localStorage.setItem('external_session', urlToken);
+      
+      console.log('[External] Session token saved to localStorage');
+      console.log('[External] Verification:', localStorage.getItem('external_session') ? 'FOUND' : 'NOT FOUND');
+      
+    } catch (error) {
+      console.error('[External] Error saving token:', error);
+    }
+    
+    // Clean URL by removing the token parameter
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+    
+    console.log('[External] URL cleaned to:', cleanUrl);
+  }
+  
   // Check if user has valid session
   if (!hasValidSession()) {
+    // Show diagnostic info
+    const cookies = document.cookie;
+    console.error('[External] No session found. Current cookies:', cookies);
+    console.error('[External] URL after processing:', window.location.href);
+    
     showMessage('No valid session found. Please use the verification link sent to you.', 'error');
-    document.getElementById('deliveryFormSection').style.display = 'none';
-    document.getElementById('uploadFileBtn').style.display = 'none';
+    
+    const deliverySection = document.getElementById('deliveryFormSection');
+    const uploadBtn = document.getElementById('uploadFileBtn');
+    if (deliverySection) deliverySection.style.display = 'none';
+    if (uploadBtn) uploadBtn.style.display = 'none';
+    
+    // Show helpful message in the main content area
+    const mainContent = document.querySelector('.max-w-7xl');
+    if (mainContent) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded';
+      messageDiv.innerHTML = `
+        <p class="text-sm text-yellow-800 mb-2"><strong>Troubleshooting:</strong></p>
+        <ul class="text-xs text-yellow-700 list-disc list-inside space-y-1">
+          <li>Make sure you're using the full verification link</li>
+          <li>Try opening the link in a new private/incognito window</li>
+          <li>Check if cookies are enabled in your browser</li>
+          <li>Current cookies: ${cookies || 'none'}</li>
+        </ul>
+      `;
+      mainContent.appendChild(messageDiv);
+    }
     return;
   }
 
@@ -55,10 +107,17 @@ if (deliveryForm) {
       
       showMessage(result.message || 'Delivery confirmed successfully!', 'success');
       
-      // Refresh order data to show updated status
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // Re-fetch order data to show updated status (don't reload page)
+      setTimeout(async () => {
+        try {
+          const orders = await fetchOrders();
+          if (orders && orders.length > 0) {
+            renderOrderInfo(orders[0]);
+          }
+        } catch (error) {
+          console.error('Error refreshing order data:', error);
+        }
+      }, 1000);
     } catch (error) {
       console.error('Delivery confirmation error:', error);
       showMessage(error.message, 'error');
@@ -119,15 +178,14 @@ if (uploadBtn && fileInput) {
 }
 
 // Document download handler
-window.handleDownloadDocument = function(docID, filename) {
-  const downloadUrl = getDocumentDownloadUrl(docID);
-  if (downloadUrl) {
-    const a = document.createElement('a');
-    a.href = downloadUrl;
-    a.download = filename || 'document.pdf';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+window.handleDownloadDocument = async function(docID, filename) {
+  try {
+    showMessage('Downloading document...', 'info');
+    await downloadDocument(docID);
+    showMessage('Document downloaded successfully', 'success');
+  } catch (error) {
+    console.error('Download error:', error);
+    showMessage('Failed to download document: ' + error.message, 'error');
   }
 };
 

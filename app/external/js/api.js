@@ -2,18 +2,8 @@
 const SERVICE_URL = '/service/external';
 
 function getSessionToken() {
-  // Get session token from cookie
-  const cookies = document.cookie.split(';');
-  for (let cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'external_session') {
-      return value;
-    }
-  }
-  
-  // Fallback: check URL params
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('sessionToken');
+  // Get session token from localStorage (more reliable than cookies)
+  return localStorage.getItem('external_session');
 }
 
 async function fetchWithAuth(url, options = {}) {
@@ -109,9 +99,38 @@ export function hasValidSession() {
   return !!getSessionToken();
 }
 
+export async function downloadDocument(documentID) {
+  const response = await fetchWithAuth(`${SERVICE_URL}/downloadDocument`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ documentID })
+  });
+  
+  const result = await response.json();
+  
+  // Convert base64 to blob and trigger download
+  const byteCharacters = atob(result.content);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], { type: result.contentType });
+  
+  // Create download link
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = result.filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+
 export function getDocumentDownloadUrl(docID) {
-  if (!docID) return null;
-  const token = getSessionToken();
-  // For external service, we include the session token in URL or rely on cookie
-  return `${SERVICE_URL}/Documents(ID=${docID},IsActiveEntity=true)/content/$value`;
+  // This function is no longer needed but kept for compatibility
+  return null;
 }
