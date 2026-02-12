@@ -134,7 +134,10 @@ function wireCreateSupplier() {
     
     try {
       const supplier = await createSupplier(name, email);
-      msgEl.textContent = `✅ Created: ${supplier.name} (${supplier.supplierID})`;
+      
+      // Show PIN in the message (only time it's displayed!)
+      const pinInfo = supplier.pin ? ` | 🔐 PIN: ${supplier.pin}` : '';
+      msgEl.innerHTML = `✅ Created: ${supplier.name} (${supplier.supplierID})${pinInfo}<br><span class="text-xs text-orange-600">⚠️ Save the PIN now - it won't be shown again!</span>`;
       msgEl.className = 'text-sm text-green-600';
       
       // Clear inputs
@@ -146,7 +149,7 @@ function wireCreateSupplier() {
       renderFilteredSuppliers();
       populateSupplierDropdown(currentSuppliers);
       
-      showMessage('Supplier created successfully!', 'success');
+      showMessage(`Supplier created! PIN: ${supplier.pin || 'N/A'}`, 'success');
     } catch (e) {
       msgEl.textContent = e?.message || String(e);
       msgEl.className = 'text-sm text-red-600';

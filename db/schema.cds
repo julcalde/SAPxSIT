@@ -18,6 +18,7 @@ entity Suppliers : cuid {
   supplierID: String(50) @assert.unique @mandatory;
   name: String(100);
   email: String(100);
+  pinHash: String(200); // Hashed PIN for 2FA
   isActive: Boolean default true; // Soft delete flag
   archivedAt: DateTime;
   archivedBy: String(100);
@@ -73,6 +74,7 @@ entity AccessTokens : cuid {
   linkInUse: Boolean default false;
   lastUsedAt: DateTime;
   createdBy: String(100);
+  pinAttempts: Integer default 0; // Track failed PIN attempts
   
   // Many-to-one relationship with order
   order: Association to Orders;

@@ -91,20 +91,28 @@ module.exports = cds.service.impl(function () {
         return req.error(400, 'Name and email are required');
       }
 
-      // Generate supplier ID
+      // Generate supplier ID and PIN
       const supplierID = `SUP-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+      const pin = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit PIN
+      const pinSalt = process.env.PIN_SALT || 'pin-salt-change-in-production';
+      const pinHash = crypto.createHash('sha256').update(`${pinSalt}:${pin}`).digest('hex');
+      
       const newSupplier = {
         ID: randomUUID(),
         supplierID,
         name,
-        email
+        email,
+        pinHash
       };
 
       await INSERT.into(Suppliers).entries(newSupplier);
 
-      console.log(`[InternalService] Created supplier ${supplierID} - ${name}`);
+      console.log(`[InternalService] Created supplier ${supplierID} - ${name} with PIN: ${pin}`);
 
-      return newSupplier;
+      return {
+        ...newSupplier,
+        pin // Return PIN so admin can see it (only on creation)
+      };
     } catch (err) {
       console.error('[InternalService] Supplier creation error:', err);
       return req.error(500, `Failed to create supplier: ${err.message}`);
@@ -147,7 +155,9 @@ module.exports = cds.service.impl(function () {
       return {
         orderId,
         token: tokenResult.token,
-        verifyUrl
+        verifyUrl,
+        supplierPin: supplier.pinHash ? '****' : null, // Indicate PIN exists but don't show value
+        note: supplier.pinHash ? 'Supplier already has a PIN set.' : 'No PIN configured for this supplier.'
       };
     } catch (err) {
       console.error('[InternalService] Order+Token creation error:', err);
