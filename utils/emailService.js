@@ -2,27 +2,66 @@ const nodemailer = require('nodemailer');
 const fs = require('fs').promises;
 const path = require('path');
 
-// Email configuration
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || process.env.MAIL_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_PORT || process.env.MAIL_PORT || '587'),
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER || process.env.MAIL_USER,
-    pass: process.env.EMAIL_PASS || process.env.MAIL_PASS
+let transporter;
+
+// Initialize email transporter with Ethereal test account if no credentials provided
+async function initializeTransporter() {
+  const hasCredentials = (process.env.EMAIL_USER || process.env.MAIL_USER) && 
+                         (process.env.EMAIL_PASS || process.env.MAIL_PASS);
+
+  if (!hasCredentials) {
+    console.log('[EmailService] No email credentials found. Creating Ethereal test account...');
+    const testAccount = await nodemailer.createTestAccount();
+    
+    console.log('[EmailService] ✅ Ethereal test account created:');
+    console.log('   Email:', testAccount.user);
+    console.log('   Password:', testAccount.pass);
+    console.log('   Preview URL: Check console after sending emails');
+    
+    transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass
+      }
+    });
+  } else {
+    transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST || process.env.MAIL_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.EMAIL_PORT || process.env.MAIL_PORT || '587'),
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER || process.env.MAIL_USER,
+        pass: process.env.EMAIL_PASS || process.env.MAIL_PASS
+      }
+    });
   }
-});
+
+  return transporter;
+}
+
+// Get or initialize transporter
+async function getTransporter() {
+  if (!transporter) {
+    await initializeTransporter();
+  }
+  return transporter;
+}
 
 /**
  * Send verification email with secure access link
  */
 async function sendVerificationEmail({ supplierEmail, supplierName, orderNumber, verifyUrl, expiresAt }) {
+  const transporter = await getTransporter();
+  
   // Load email template
-  const templatePath = path.join(__dirname, '..', 'srv', 'email', 'standardEmail.html');
+  const templatePath = path.join(__dirname, '..', 'srv', 'templates', 'verification-email.html');
   let htmlContent = await fs.readFile(templatePath, 'utf8');
 
   // Load CSS styles
-  const stylesPath = path.join(__dirname, '..', 'srv', 'email', 'email-styles.css');
+  const stylesPath = path.join(__dirname, '..', 'srv', 'templates', 'email-styles.css');
   const cssStyles = await fs.readFile(stylesPath, 'utf8');
 
   // Helper function to escape HTML
@@ -45,23 +84,32 @@ async function sendVerificationEmail({ supplierEmail, supplierName, orderNumber,
     .replace(/{{expiresAt}}/g, escapeHtml(new Date(expiresAt).toLocaleString()));
 
   const mailOptions = {
-    from: process.env.EMAIL_USER || process.env.MAIL_USER,
+    from: process.env.EMAIL_USER || process.env.MAIL_USER || 'noreply@supplier-system.com',
     to: supplierEmail,
     subject: `Order Verification Required - ${orderNumber}`,
     html: htmlContent
   };
 
-  return transporter.sendMail(mailOptions);
+  const info = await transporter.sendMail(mailOptions);
+  
+  // Log preview URL for Ethereal
+  if (info.messageId && transporter.transporter?.host === 'smtp.ethereal.email') {
+    console.log('[EmailService] 📧 Preview URL:', nodemailer.getTestMessageUrl(info));
+  }
+  
+  return info;
 }
 
 /**
  * Send delivery confirmation notification to admin
  */
 async function sendAdminNotification({ orderNumber, deliveryDate, deliveryNotes, confirmedAt }) {
+  const transporter = await getTransporter();
   const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER || process.env.MAIL_USER;
   
   if (!adminEmail) {
-    throw new Error('Admin email not configured (set ADMIN_EMAIL, EMAIL_USER, or MAIL_USER)');
+    console.warn('[EmailService] Admin email not configured - skipping notification');
+    return null;
   }
 
   const mailOptions = {
@@ -97,10 +145,18 @@ async function sendAdminNotification({ orderNumber, deliveryDate, deliveryNotes,
     `
   };
 
-  return transporter.sendMail(mailOptions);
+  const info = await transporter.sendMail(mailOptions);
+  
+  // Log preview URL for Ethereal
+  if (info.messageId && transporter.transporter?.host === 'smtp.ethereal.email') {
+    console.log('[EmailService] 📧 Admin notification preview:', nodemailer.getTestMessageUrl(info));
+  }
+  
+  return info;
 }
 
 module.exports = {
   sendVerificationEmail,
-  sendAdminNotification
+  sendAdminNotification,
+  initializeTransporter
 };
