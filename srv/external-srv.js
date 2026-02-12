@@ -117,7 +117,7 @@ module.exports = cds.service.impl(function() {
 
       // Send notification email to admin
       try {
-        const { sendAdminNotification } = require('./utils/emailService');
+        const { sendAdminNotification } = require('../utils/emailService');
         const order = await SELECT.one.from(Orders)
           .columns('orderNumber', 'deliveryNotes')
           .where({ ID: orderID });
