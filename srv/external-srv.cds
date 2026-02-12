@@ -18,7 +18,7 @@ service ExternalAccessService {
   };
   
   // Document download action
-  function downloadDocument(documentID: UUID) returns {
+  action downloadDocument(documentID: UUID) returns {
     filename: String;
     contentType: String;
     content: LargeBinary;

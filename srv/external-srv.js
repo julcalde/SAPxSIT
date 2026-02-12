@@ -44,6 +44,12 @@ module.exports = cds.service.impl(function() {
   // Validate JWT session token on all requests
   this.before('*', (req) => {
     const token = getSessionToken(req);
+    
+    console.log('[ExternalService] Auth check - Path:', req.path);
+    console.log('[ExternalService] Auth check - Authorization header:', req.headers['authorization'] ? 'EXISTS' : 'MISSING');
+    console.log('[ExternalService] Auth check - Cookie header:', req.headers['cookie'] ? 'EXISTS' : 'MISSING');
+    console.log('[ExternalService] Auth check - Token found:', !!token);
+    
     if (!token) {
       return req.reject(401, 'Session token is required');
     }
