@@ -40,7 +40,6 @@ module.exports = cds.service.impl(function () {
   }
 
   async function createSessionAndSetCookie(req, tokenRecord) {
-  async function createSessionAndSetCookie(req, tokenRecord) {
     const now = new Date();
 
     // Mark token as used
@@ -164,7 +163,6 @@ module.exports = cds.service.impl(function () {
     const tokenRecord = await cds.run(
       SELECT.one
         .from('SupplierManagement.AccessTokens')
-        .columns('*', { ref: ['order', 'supplier', 'pinHash'] })
         .where({ token })
     );
 
@@ -177,11 +175,23 @@ module.exports = cds.service.impl(function () {
       return validationError;
     }
 
-    // Get supplier's PIN hash via order
+    // Get order to find supplier
+    const order = await cds.run(
+      SELECT.one
+        .from('SupplierManagement.Orders')
+        .where({ ID: tokenRecord.order_ID })
+    );
+
+    if (!order) {
+      console.error('[TokenVerification] Order not found for token:', tokenRecord.ID);
+      return req.error(404, 'Order not found');
+    }
+
+    // Get supplier's PIN hash
     const supplier = await cds.run(
       SELECT.one
         .from('SupplierManagement.Suppliers')
-        .where({ ID: tokenRecord.order.supplier_ID })
+        .where({ ID: order.supplier_ID })
     );
 
     if (!supplier || !supplier.pinHash) {
