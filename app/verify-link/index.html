@@ -448,20 +448,6 @@
         resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }, 100);
     }
-
-    // Auto-paste from clipboard on focus (with permission)
-    input.addEventListener('focus', async () => {
-      try {
-        const text = await navigator.clipboard.readText();
-        if (text && (text.includes('token=') || text.length === 64)) {
-          if (confirm('Paste from clipboard?\n\n' + text.substring(0, 50) + '...')) {
-            input.value = text;
-          }
-        }
-      } catch (err) {
-        // Clipboard access denied or not available
-      }
-    });
   </script>
 </body>
 </html>
