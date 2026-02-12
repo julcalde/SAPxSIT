@@ -1,260 +1,553 @@
 # Unified Supplier Management System
 
-A complete, production-grade supplier management system with secure token-based access and document handling. Built with SAP Cloud Application Programming Model (CAP).
+**Version 1.0.0** | Production-Ready Supplier Portal with Advanced Security
 
-## Features
+A complete supplier management system built with SAP Cloud Application Programming Model (CAP), featuring secure token-based authentication, 4-digit PIN two-factor authentication, anti-phishing protection, and automated email notifications.
 
-### Core Functionality
-- **Secure Token Authentication**: Crypto-based tokens converted to JWT sessions with httpOnly cookies
-- **External Supplier Access**: Token-verified interface for order viewing and delivery confirmation
-- **Admin Panel**: Internal management UI for creating suppliers/orders, managing documents, and generating links
-- **Document Management**: Upload, download, delete PDFs with status tracking and admin feedback
-- **Email Integration**: Automated verification emails with secure access links
-- **File Upload**: Support for PDF and image attachments with validation
-- **Status Tracking**: Order and document status with color-coded UI indicators
+---
 
-### New Features (Feb 2026)
-- **4-Digit PIN 2FA**: Two-factor authentication with hashed PINs for supplier access
-  - Random PIN generation on supplier creation
-  - PIN entry page with max 3 attempts
-  - Automatic token lockout after failed attempts
-  - Secure PIN hashing with salt (never stored in plain text)
-- **Anti-Phishing Verification Page**: Public link verification tool at `/verify-link`
-  - Verify link authenticity without clicking
-  - Shows order details, creation date, expiration status
-  - Warning levels (safe/warning/danger) with color-coded UI
-  - Protects suppliers from phishing attacks
-- **Supplier Creation**: Create new suppliers with auto-generated IDs (SUP-XXXXXXXX format)
-- **Order + Token Creation**: Generate orders with verification tokens in single action
-- **Soft Delete System**: 
-  - Archive/restore suppliers (with active order validation)
-  - Cancel/restore orders (with reason tracking and automatic token revocation)
-  - Filter archived/cancelled items with checkboxes
-  - Visual indicators (status badges, dimmed rows)
-  - Metadata tracking (who/when for archive/cancel actions)
-- **PDF Management**: Full download support for suppliers in external view, upload/download/delete for admins
-- **Enhanced UI**: Status badges, action buttons, real-time filtering
+## 🎯 Overview
 
-## Project Structure
+The Unified Supplier Management System provides a secure, user-friendly platform for managing supplier interactions, order verification, and document exchange. Suppliers receive secure verification links via email, authenticate using a 4-digit PIN, and access a dedicated portal to confirm deliveries and upload documents.
+
+### Key Highlights
+
+- ✅ **Enterprise-grade security** with JWT sessions and PIN-based 2FA
+- 📧 **Automated email notifications** with Ethereal/SMTP integration
+- 🛡️ **Anti-phishing protection** with public link verification tool
+- 📱 **Modern, responsive UI** with Tailwind CSS
+- 🔒 **HttpOnly cookies** for BAS (Business Application Studio) compatibility
+- 📄 **Complete document management** with upload/download capabilities
+
+---
+
+## 🚀 Features
+
+### Security & Authentication
+
+- **4-Digit PIN Two-Factor Authentication**
+  - Random PIN generation on supplier creation (shown only once)
+  - Secure PIN storage with SHA-256 hashing and salt
+  - Maximum 3 PIN attempts before token lockout
+  - Automatic token revocation after failed attempts
+
+- **Token-Based Access Control**
+  - 64-character cryptographic tokens
+  - Configurable expiration (default: 42 hours)
+  - Token revocation and status tracking
+  - JWT session tokens (24-hour validity)
+
+- **Anti-Phishing Verification**
+  - Public link verification at `/verify-link/index.html`
+  - Verify link authenticity before clicking
+  - Color-coded safety indicators (green/yellow/red)
+  - Shows order details and expiration status
+
+### Supplier Portal Features
+
+- **Order Access**
+  - View order details, amounts, and delivery information
+  - Secure PIN-protected access
+  - 24-hour session persistence (no re-login needed)
+
+- **Delivery Confirmation**
+  - Confirm delivery with date and notes
+  - Automatic admin email notification
+  - Delivery status tracking
+
+- **Document Management**
+  - Upload supporting documents (invoices, delivery notes, etc.)
+  - Download uploaded documents
+  - Document type categorization
+  - Status tracking
+
+### Admin Panel Features
+
+- **Supplier Management**
+  - Create suppliers with auto-generated IDs (`SUP-XXXXXXXX`)
+  - 4-digit PIN generated and displayed (save immediately!)
+  - Archive/restore suppliers
+  - Email address management
+
+- **Order & Token Management**
+  - Create orders with automatic token generation
+  - Send verification emails with secure links
+  - View all orders with supplier information
+  - Cancel/restore orders with reason tracking
+
+- **Document Administration**
+  - View all uploaded documents
+  - Download and delete documents
+  - Document status updates with admin feedback
+  - Filter by status
+
+### Email Notifications
+
+- **Verification Emails**
+  - Sent to suppliers with secure access links
+  - Styled HTML templates with CSS
+  - Includes order number and expiration date
+  - Configurable SMTP or Ethereal (testing)
+
+- **Admin Notifications**
+  - Delivery confirmation alerts
+  - Includes delivery date and notes
+  - Automated on supplier delivery confirmation
+
+---
+
+## 📁 Project Structure
 
 ```
 SAPxSIT/
-├─ app/
-│  ├─ admin/             # Internal admin panel
-│  │  ├─ index.html      # Admin UI with Tailwind CSS
-│  │  └─ js/
-│  │     ├─ api.js       # Internal service API client
-│  │     ├─ ui.js        # UI rendering functions
-│  │     └─ main.js      # Event handlers and initialization
-│  ├─ pin/               # PIN verification page (2FA)
-│  │  └─ index.html      # 4-digit PIN entry with modern UI
-│  ├─ verify-link/       # Anti-phishing verification tool
-│  │  └─ index.html      # Public link authenticity checker
-│  └─ external/          # External supplier interface
-│     ├─ index.html      # Supplier order details page
-│     └─ js/
-│        ├─ api.js       # External service API client with JWT
-│        ├─ ui.js        # UI rendering functions
-│        └─ main.js      # Event handlers and initialization
-├─ srv/
-│  ├─ internal-srv.cds   # Internal service definition
-│  ├─ internal-srv.js    # Link generation, email, admin actions
-│  ├─ external-srv.cds   # External service definition
-│  ├─ external-srv.js    # Supplier actions with JWT auth
-│  ├─ token-verify-srv.cds # Token verification service
-│  ├─ token-verify-srv.js  # Token to JWT conversion + PIN verification
-│  ├─ templates/
-│  │  ├─ email-styles.css
-│  │  └─ standardEmail.html
-│  └─ utils/
-│     └─ url-generator.js # URL generation utilities
-├─ db/
-│  ├─ schema.cds         # Domain model (Suppliers, Orders, Documents, Tokens)
-│  └─ data/              # CSV test data
-└─ utils/
-   └─ emailService.js    # Email sending utilities
-
+├── app/                          # Frontend applications
+│   ├── admin/                    # Admin panel
+│   │   ├── index.html           # Main admin interface
+│   │   └── js/
+│   │       ├── api.js           # API client
+│   │       ├── ui.js            # UI rendering
+│   │       └── main.js          # Event handlers
+│   ├── external/                 # Supplier portal
+│   │   ├── index.html           # Supplier interface
+│   │   └── js/
+│   │       ├── api.js           # External API client
+│   │       ├── ui.js            # UI components
+│   │       └── main.js          # Portal logic
+│   ├── pin/                      # PIN verification (2FA)
+│   │   └── index.html           # 4-digit PIN entry page
+│   └── verify-link/              # Anti-phishing tool
+│       └── index.html           # Link verification page
+├── srv/                          # Backend services
+│   ├── internal-srv.cds         # Admin service definition
+│   ├── internal-srv.js          # Admin service logic
+│   ├── external-srv.cds         # Supplier service definition
+│   ├── external-srv.js          # Supplier service logic
+│   ├── token-verify-srv.cds     # Token verification definition
+│   ├── token-verify-srv.js      # PIN & token verification
+│   ├── templates/                # Email templates
+│   │   ├── verification-email.html
+│   │   └── email-styles.css
+│   └── utils/
+│       └── url-generator.js     # Public URL generation
+├── db/                           # Database
+│   ├── schema.cds               # Data model
+│   └── undeploy.json            # Deployment config
+├── utils/                        # Shared utilities
+│   └── emailService.js          # Email sending with Ethereal
+├── test/                         # Test data
+│   └── data/                    # CSV test data
+├── .env                          # Environment configuration
+├── package.json                  # Dependencies
+└── README.md                     # This file
 ```
 
-## Business Flow
+---
 
-### Admin Workflow
-1. **Create Supplier**: Fill form with name/email → Auto-generated SUP-XXXXXXXX ID + 4-digit PIN
-2. **Save PIN**: Note the PIN displayed (only shown once) to send to supplier separately
-3. **Create Order + Token**: Select supplier → Click "Create Order" → Instant order with verification URL
-4. **View Suppliers & Orders**: Access admin panel at `/admin/index.html`
-5. **Generate Secure Link**: Click "Generate Link" for an order (alternative to step 3)
-6. **Send Email**: Optionally send automated verification email with link (send PIN separately!)
-7. **Manage Documents**: Upload, download, delete PDFs; review and update status
-8. **Archive/Cancel**: Archive suppliers or cancel orders with tracking
-9. **Filter Views**: Toggle archived suppliers and cancelled orders visibility
-
-### Supplier Workflow
-1. **Receive Email**: Get verification email with secure access link
-2. **Verify Link (Optional)**: Use `/verify-link` page to check link authenticity before clicking
-3. **Access Order**: Click link → token verified → redirected to PIN page
-4. **Enter PIN**: Input 4-digit PIN (provided separately) → max 3 attempts
-5. **View Details**: See order information and existing documents after PIN verification
-6. **Download Documents**: Click download button for any document
-7. **Confirm Delivery**: Submit delivery date and notes
-8. **Upload Documents**: Add PDF/image files for verification
-
-## Getting Started
+## 🔧 Installation & Setup
 
 ### Prerequisites
 
-- Node.js (LTS version)
-- @sap/cds-dk (SAP Cloud Application Programming Model CLI)
+- Node.js 18+ and npm
+- SQLite (for local development)
+- Git
 
-### Installation
+### Quick Start
 
-```bash
-npm install
-```
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd SAPxSIT
+   ```
 
-### Development
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-```bash
-# Start the CAP server
-npm start
+3. **Configure environment variables**
+   
+   Edit `.env` file:
+   ```env
+   # Email Configuration (Ethereal for testing, or real SMTP)
+   EMAIL_HOST=smtp.ethereal.email
+   EMAIL_PORT=587
+   EMAIL_USER=                        # Auto-generated if empty
+   EMAIL_PASS=                        # Auto-generated if empty
+   
+   # Public URL
+   PUBLIC_BASE_URL=http://localhost:4004
+   
+   # JWT Secret (change in production!)
+   JWT_SECRET=change-this-secret-key-in-production
+   
+   # PIN Salt (change in production!)
+   PIN_SALT=pin-salt-change-in-production
+   ```
 
-# Or with watch mode
-cds watch
-```
+4. **Deploy database**
+   ```bash
+   npx cds deploy
+   ```
 
-This will start the CAP server on http://localhost:4004
+5. **Start the server**
+   ```bash
+   npx cds watch
+   ```
 
-### Database Setup
+6. **Access the application**
+   - Admin Panel: http://localhost:4004/admin/index.html
+   - Anti-Phishing Tool: http://localhost:4004/verify-link/index.html
 
-The application uses SQLite for development. Database is automatically initialized from CSV data files in `db/data/`.
+---
 
-```bash
-# Recreate database (if needed)
-rm -f db.sqlite
-npx cds deploy --to sqlite
-```
+## 📖 Usage Guide
 
-### Access Points
+### For Administrators
 
-- **Admin Panel**: http://localhost:4004/admin/index.html
-- **PIN Entry**: http://localhost:4004/pin/index.html (accessed via verification link)
-- **Link Verification**: http://localhost:4004/verify-link/index.html (public anti-phishing tool)
-- **External Access**: Via secure token link (generated from admin panel)
-- **Internal Service**: http://localhost:4004/service/internal
-- **External Service**: http://localhost:4004/service/external (requires JWT)
-- **Token Verification**: http://localhost:4004/service/verify
+#### 1. Create a Supplier
 
-## Testing
+1. Open Admin Panel: `http://localhost:4004/admin/index.html`
+2. Navigate to "Suppliers" tab
+3. Click "Create New Supplier"
+4. Fill in:
+   - Name
+   - Email address
+5. Click "Create Supplier"
+6. **IMPORTANT**: Save the 4-digit PIN shown (it won't be displayed again!)
 
-Comprehensive backend testing completed (Feb 11, 2026):
-- ✅ Supplier creation with auto-generated IDs
-- ✅ Order + token creation in single action
-- ✅ Archive supplier validation (blocks when active orders exist)
-- ✅ Cancel order with reason tracking
-- ✅ Restore operations for suppliers and orders
-- ✅ Token generation and validation
-- ✅ JWT session creation
-- ✅ Email integration
-- ✅ Document status updates
-- ✅ Delivery confirmation
-- ✅ Security controls (token reuse, status validation, automatic token revocation)
+#### 2. Create Order & Generate Verification Link
 
-See [TESTING_GUIDE.md](TESTING_GUIDE.md) for detailed test procedures and results.
+1. Navigate to "Orders" tab
+2. Click "Create New Order"
+3. Select supplier from dropdown
+4. Fill in order details:
+   - Order number
+   - Description (optional)
+   - Total amount (optional)
+   - Expiration hours (default: 42)
+5. Click "Generate Secure Link"
+6. Copy the verification URL
+7. Optionally send email notification
 
-### Frontend Testing Checklist
+#### 3. Manage Documents
 
-1. **Admin Panel**:
-   - [ ] Create new supplier (form with auto-generated ID)
-   - [ ] Create order with token (single-click order generation)
-   - [ ] View suppliers and orders
-   - [ ] Archive/restore suppliers
-   - [ ] Cancel/restore orders
-   - [ ] Filter archived suppliers and cancelled orders
-   - [ ] Upload/download/delete documents
-   - [ ] Generate secure access link
-   - [ ] Send verification email
-   - [ ] Update document status
+1. Navigate to "Documents" tab
+2. View all uploaded documents
+3. Download documents using download button
+4. Update status or add admin feedback
+5. Delete documents if needed
 
-2. **External Supplier Access**:
-   - [ ] Access via secure token link
-   - [ ] Enter 4-digit PIN (max 3 attempts)
-   - [ ] View order details after PIN verification
-   - [ ] Download documents
-   - [ ] Confirm delivery with date and notes
-   - [ ] Upload documents (PDF/images)
-   - [ ] View existing documents with status
+### For Suppliers
 
-3. **Anti-Phishing Verification**:
-   - [ ] Access `/verify-link` page
-   - [ ] Paste verification URL or token
-   - [ ] Verify legitimate links show green status with order details
-   - [ ] Verify fake/invalid tokens show red danger warning
-   - [ ] Verify expired tokens show yellow warning
-   - [ ] Check phishing education section displays
+#### 1. Verify Link Authenticity (Recommended)
 
-## Security Architecture
+1. Before clicking the link, visit: `http://localhost:4004/verify-link/index.html`
+2. Paste the verification URL you received
+3. Click "🔍 Verify Link"
+4. Check for green "safe" status
+5. Verify order details are correct
 
-- **Crypto Tokens**: Random 64-character hex tokens for initial verification
-- **4-Digit PIN 2FA**: Second authentication factor with hashed storage and attempt limits
-- **JWT Sessions**: httpOnly cookies with 24-hour expiration
-- **Token Validation**: Single-use, time-limited (42h 13m 37s default)
-- **Token Revocation**: Automatic revocation when orders are cancelled or after 3 failed PIN attempts
-- **Authorization**: Order-scoped access via JWT claims
-- **Anti-Phishing**: Public link verification tool to check authenticity before clicking
-- **File Validation**: Type and size restrictions on uploads (10MB limit)
-- **Status Controls**: Validated against DocumentStatus code list
-- **Soft Delete**: Archive/cancel operations preserve data integrity with metadata tracking
-- **PIN Security**: Salted SHA-256 hashing, never stored in plain text
+#### 2. Access Order Portal
 
-## Email Configuration
+1. Click the verification link received via email
+2. You'll be redirected to PIN entry page
+3. Enter the 4-digit PIN (provided separately by admin)
+4. Auto-submits when 4 digits entered
+5. On success: redirected to order portal
 
-The system uses Nodemailer for email delivery. Configure SMTP settings in environment variables:
+#### 3. View Order Details
 
-```bash
-EMAIL_USER=your-email@example.com
-EMAIL_PASS=your-app-password
-```
+- Order number, description, total amount
+- Delivery dates and status
+- All order-related information
 
-For Gmail, use App Passwords: https://myaccount.google.com/apppasswords
+#### 4. Confirm Delivery
 
-## API Endpoints
+1. Click "Confirm Delivery"
+2. Select delivery date
+3. Add delivery notes (optional)
+4. Click "Confirm"
+5. Admin receives automatic email notification
 
-### Internal Service (`/service/internal`)
+#### 5. Upload Documents
+
+1. Click "Choose File" or drag-and-drop
+2. Select document type (invoice, delivery note, etc.)
+3. Add description
+4. Click "Upload Document"
+5. Document appears in list
+
+---
+
+## 🔒 Security Features
+
+### PIN Two-Factor Authentication
+
+- **Generation**: Random 4-digit PIN on supplier creation
+- **Storage**: SHA-256 hashed with salt (never plain text)
+- **Attempts**: Maximum 3 attempts before lockout
+- **Display**: Shown only once during creation
+- **Transmission**: Should be sent via separate channel (SMS, phone, etc.)
+
+### Token Security
+
+- **Format**: 64-character hexadecimal
+- **Algorithm**: Cryptographically secure random generation
+- **Expiration**: Configurable (default: 42 hours, 13 minutes, 37 seconds)
+- **Revocation**: Automatic on PIN failure or manual by admin
+- **Single Use**: Token locked after successful PIN verification
+
+### Session Management
+
+- **JWT Tokens**: Signed with secret key
+- **HttpOnly Cookies**: Browser-managed, JavaScript-inaccessible
+- **Duration**: 24 hours (86400 seconds)
+- **Automatic Renewal**: No, session expires after 24h
+
+### Anti-Phishing Protection
+
+- **Public Verification**: No authentication required
+- **Token Validation**: Checks database for authenticity
+- **Status Indicators**: Visual feedback (green/yellow/red)
+- **Information Display**: Shows order details if valid
+- **Education**: Phishing warning signs included
+
+---
+
+## 🌐 API Endpoints
+
+### Internal Service (Admin)
+
+**Base URL**: `/service/internal`
+
+#### Suppliers
 - `GET /Suppliers` - List all suppliers
-- `GET /Orders` - List all orders
-- `GET /Documents` - List all documents
-- `POST /createSupplier` - Create new supplier with auto-generated ID
-- `POST /createOrderAndToken` - Create order with verification token in one action
-- `POST /generateSecureLink` - Generate access token for existing order
-- `POST /sendVerificationEmail` - Send email with link
-- `POST /archiveSupplier` - Archive supplier (validates no active orders)
-- `POST /restoreSupplier` - Restore archived supplier
-- `POST /cancelOrder` - Cancel order with reason (auto-revokes tokens)
-- `POST /restoreOrder` - Restore cancelled order
-- `POST /uploadDocumentContent` - Upload document file content
-- `POST /createDocumentForOrder` - Create document metadata
-- `DELETE /Documents(ID)` - Delete document
-- `PATCH /Documents(ID)` - Update document status
+- `POST /createSupplier` - Create supplier with PIN
+  ```json
+  {
+    "name": "Company Name",
+    "email": "contact@company.com"
+  }
+  ```
+  Returns: `{ supplierID, name, email, pinHash, pin }`
 
-### External Service (`/service/external`)
-- `GET /Orders` - View authorized order (JWT required)
-- `GET /Documents` - View order documents (JWT required)
-- `POST /confirmDelivery` - Confirm delivery (JWT required)
-- `POST /uploadDocument` - Upload document (JWT required)
+#### Orders
+- `GET /Orders?$expand=supplier` - List orders with supplier info
+- `POST /createOrderAndToken` - Create order with verification token
+  ```json
+  {
+    "supplierId": "uuid"
+  }
+  ```
+  Returns: `{ orderId, token, verifyUrl, supplierPin, note }`
 
-### Token Verification (`/service/verify`)
-- `GET /verifyAndRedirect` - Verify token and redirect to PIN entry page
-- `POST /verifyPin` - Verify 4-digit PIN and create JWT session
-- `POST /checkLinkAuthenticity` - Verify link authenticity (public, no auth required)
+#### Email
+- `POST /sendVerificationEmail` - Send email to supplier
+  ```json
+  {
+    "orderID": "uuid"
+  }
+  ```
 
-## Development Notes
+### External Service (Supplier)
 
-- Frontend uses Tailwind CSS via CDN (no build step required)
-- JavaScript modules with clean separation (api.js, ui.js, main.js)
-- Base64 encoding for document uploads
-- Files stored in `/uploads` directory
-- Test data provided in `db/data/*.csv`
+**Base URL**: `/service/external`
 
-## Reference
+**Authentication**: Required (JWT in httpOnly cookie)
 
-For SAP CAP documentation: https://cap.cloud.sap/docs/
+- `GET /Order` - Get current order details
+- `GET /Documents` - List order documents
+- `POST /confirmDelivery` - Confirm delivery
+  ```json
+  {
+    "deliveryDate": "2026-02-12",
+    "notes": "Delivery notes"
+  }
+  ```
+- `POST /uploadDocument` - Upload document (multipart/form-data)
+
+### Token Verification Service
+
+**Base URL**: `/service/verify`
+
+#### Token Verification
+- `GET /verifyAndRedirect?token={token}` - Verify token, redirect to PIN page
+  - Returns: 302 redirect to `/pin/index.html?token={token}`
+
+#### PIN Verification
+- `POST /verifyPin` - Verify 4-digit PIN
+  ```json
+  {
+    "token": "64-char-hex",
+    "pin": "1234"
+  }
+  ```
+  Returns: `{ success, orderID, sessionToken, expiresIn, message }`
+
+#### Link Authenticity (Public)
+- `POST /checkLinkAuthenticity` - Verify link without authentication
+  ```json
+  {
+    "urlOrToken": "url-or-token-string"
+  }
+  ```
+  Returns: `{ isValid, warningLevel, message, orderNumber, supplierName, expiresAt }`
+
+---
+
+## 📧 Email Configuration
+
+### Using Ethereal (Development/Testing)
+
+Ethereal is a fake SMTP service that captures emails and provides preview URLs.
+
+**Configuration**: Leave EMAIL_USER and EMAIL_PASS empty in `.env`
+
+The system will auto-generate Ethereal credentials on startup and log:
+```
+[EmailService] ✅ Ethereal test account created:
+   Email: xxxxx@ethereal.email
+   Password: xxxxx
+```
+
+When emails are sent, check console for preview URLs:
+```
+[EmailService] 📧 Preview URL: https://ethereal.email/message/xxxxx
+```
+
+### Using Real SMTP (Production)
+
+**Gmail Example**:
+1. Enable 2-Step Verification in Google Account
+2. Generate App Password: https://myaccount.google.com/apppasswords
+3. Update `.env`:
+   ```env
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
+   EMAIL_USER=your-email@gmail.com
+   EMAIL_PASS=your-app-password
+   ```
+
+**Other SMTP Providers**: Update host, port, credentials accordingly
+
+---
+
+## 🧪 Testing
+
+See [TESTING_GUIDE.md](TESTING_GUIDE.md) for comprehensive testing instructions including:
+- Frontend testing routes (supplier & admin)
+- Backend API testing
+- Security feature testing
+- Email notification testing
+
+---
+
+## 🚀 Deployment
+
+### Environment Variables
+
+**Production Checklist**:
+- [ ] Change `JWT_SECRET` to strong random string
+- [ ] Change `PIN_SALT` to strong random string
+- [ ] Configure real SMTP credentials
+- [ ] Update `PUBLIC_BASE_URL` to production domain
+- [ ] Set `NODE_ENV=production`
+
+### Database Migration
+
+For production databases:
+```bash
+npx cds deploy --to <database>
+```
+
+### Starting in Production
+
+```bash
+NODE_ENV=production npm start
+```
+
+---
+
+## 📝 Database Schema
+
+### Key Entities
+
+**Suppliers**
+- ID, supplierID, name, email
+- `pinHash` - SHA-256 hashed PIN
+- isActive, archivedAt, archivedBy
+
+**Orders**
+- ID, orderNumber, description, totalAmount
+- supplier_ID (association)
+- status, deliveryDate, deliveryNotes
+- cancelledAt, cancelReason, cancelledBy
+
+**AccessTokens**
+- ID, token (64-char hex)
+- order_ID (association)
+- expiresAt, revoked, linkInUse
+- `pinAttempts` - Failed PIN attempt counter
+- createdBy, revokedAt, revokedBy
+
+**Documents**
+- ID, fileName, fileSize, mimeType
+- order_ID (association)
+- documentType, description
+- status, uploadedAt, adminFeedback
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
+
+---
+
+## 📄 License
+
+UNLICENSED - Private use only
+
+---
+
+## 🆘 Troubleshooting
+
+### Email not sending
+- Check console for `[EmailService]` logs
+- Verify EMAIL_HOST, EMAIL_PORT credentials
+- For Ethereal: emails won't reach real inboxes (use preview URL)
+- For Gmail: ensure App Password (not regular password)
+
+### PIN verification failing
+- Check console for `[TokenVerification]` logs
+- Verify PIN was saved from supplier creation
+- Check pinAttempts count (max 3)
+- Token may be locked after failed attempts
+
+### Session/Cookie issues in BAS
+- Ensure `credentials: 'include'` in fetch requests
+- Check browser DevTools → Application → Cookies
+- HttpOnly cookies won't appear in `document.cookie`
+- Verify `external_session` cookie exists
+
+### File upload 413 error
+- Check `package.json` for body-parser limits
+- Current limit: 100mb for json/text/urlencoded
+- For larger files, increase `cds.server` limits
+
+---
+
+## 📞 Support
+
+For issues and questions:
+- Create an issue in the repository
+- Check [TESTING_GUIDE.md](TESTING_GUIDE.md) for common scenarios
+- Review console logs for detailed error messages
+
+---
+
+**Built with ❤️ using SAP CAP, Node.js, and modern web technologies**
