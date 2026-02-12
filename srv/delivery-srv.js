@@ -69,17 +69,18 @@ module.exports = cds.service.impl(function () {
 
     await cds.run(
       INSERT.into("AccessPage.Tokens")
-        .columns(
-          "ID",
-          "token",
-          "orderID_ID",
-          "expires_at",
-          "revoked",
-          "linkInUse",
-          "lastUsed_at"
-        )
-        .values(randomUUID(), token, orderID, expires, false, false, null)
-    );
+          .columns(
+            "ID",
+            "token",
+            "orderID_ID",
+            "expires_at",
+            "revoked",
+            "linkInUse",
+            "lastUsed_at",
+            "pinAttempts"
+          )
+          .values(randomUUID(), token, orderID, expires, false, false, null, 0)
+      );
 
     // Build the URL
     const verifyUrl = generatePublicUrl(req, token);

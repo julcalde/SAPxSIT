@@ -16,6 +16,7 @@ entity Sellers : cuid {
   address: String(250);
   phone: String(20);
   taxInfo: String(100);
+  pinHash: String(200);
 }
 
 @assert.unique: { productId: [productId] }
@@ -64,4 +65,5 @@ entity Tokens : cuid {
   revoked: Boolean;
   lastUsed_at: DateTime;
   linkInUse: Boolean;
+  pinAttempts: Integer default 0;
 }
