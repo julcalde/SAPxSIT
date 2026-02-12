@@ -16,6 +16,9 @@ async function init() {
       // Use localStorage instead of cookies (more reliable for JWT tokens)
       localStorage.setItem('external_session', urlToken);
       
+      // Also set as cookie for BAS proxy compatibility
+      document.cookie = `external_session=${urlToken}; path=/; max-age=86400; SameSite=Lax`;
+      
       console.log('[External] Session token saved to localStorage');
       console.log('[External] Verification:', localStorage.getItem('external_session') ? 'FOUND' : 'NOT FOUND');
       

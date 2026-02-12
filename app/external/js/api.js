@@ -1,24 +1,18 @@
 // app/external/js/api.js
 const SERVICE_URL = '/service/external';
 
-function getSessionToken() {
-  // Get session token from localStorage (more reliable than cookies)
-  return localStorage.getItem('external_session');
-}
-
 async function fetchWithAuth(url, options = {}) {
-  const token = getSessionToken();
+  // Note: Session token is stored in httpOnly cookie (not accessible via document.cookie)
+  // The browser automatically sends it when credentials: 'include' is set
   
-  if (!token) {
-    throw new Error('No session token found. Please use the verification link provided.');
-  }
-
-  const headers = {
-    ...options.headers,
-    'Authorization': `Bearer ${token}`
-  };
-
-  const response = await fetch(url, { ...options, headers });
+  console.log('[API] fetchWithAuth - URL:', url);
+  
+  const response = await fetch(url, { 
+    ...options,
+    credentials: 'include'  // Important: Include httpOnly cookies automatically
+  });
+  
+  console.log('[API] fetchWithAuth - Response status:', response.status);
   
   if (response.status === 401) {
     throw new Error('Session expired or invalid. Please request a new verification link.');
@@ -96,7 +90,9 @@ function fileToBase64(file) {
 }
 
 export function hasValidSession() {
-  return !!getSessionToken();
+  // Since the session is in an httpOnly cookie, we can't check it from JavaScript
+  // Just check if we have the token in localStorage (saved during redirect)
+  return !!localStorage.getItem('external_session');
 }
 
 export async function downloadDocument(documentID) {
