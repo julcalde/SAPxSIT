@@ -46,6 +46,10 @@ SAPxSIT/
 │  │     ├─ api.js       # Internal service API client
 │  │     ├─ ui.js        # UI rendering functions
 │  │     └─ main.js      # Event handlers and initialization
+│  ├─ pin/               # PIN verification page (2FA)
+│  │  └─ index.html      # 4-digit PIN entry with modern UI
+│  ├─ verify-link/       # Anti-phishing verification tool
+│  │  └─ index.html      # Public link authenticity checker
 │  └─ external/          # External supplier interface
 │     ├─ index.html      # Supplier order details page
 │     └─ js/
@@ -58,10 +62,12 @@ SAPxSIT/
 │  ├─ external-srv.cds   # External service definition
 │  ├─ external-srv.js    # Supplier actions with JWT auth
 │  ├─ token-verify-srv.cds # Token verification service
-│  ├─ token-verify-srv.js  # Token to JWT conversion
-│  └─ email/
-│     ├─ email-styles.css
-│     └─ standardEmail.html
+│  ├─ token-verify-srv.js  # Token to JWT conversion + PIN verification
+│  ├─ templates/
+│  │  ├─ email-styles.css
+│  │  └─ standardEmail.html
+│  └─ utils/
+│     └─ url-generator.js # URL generation utilities
 ├─ db/
 │  ├─ schema.cds         # Domain model (Suppliers, Orders, Documents, Tokens)
 │  └─ data/              # CSV test data
@@ -73,22 +79,25 @@ SAPxSIT/
 ## Business Flow
 
 ### Admin Workflow
-1. **Create Supplier**: Fill form with name/email → Auto-generated SUP-XXXXXXXX ID
-2. **Create Order + Token**: Select supplier → Click "Create Order" → Instant order with verification URL
-3. **View Suppliers & Orders**: Access admin panel at `/admin/index.html`
-4. **Generate Secure Link**: Click "Generate Link" for an order (alternative to step 2)
-5. **Send Email**: Optionally send automated verification email with link
-6. **Manage Documents**: Upload, download, delete PDFs; review and update status
-7. **Archive/Cancel**: Archive suppliers or cancel orders with tracking
-8. **Filter Views**: Toggle archived suppliers and cancelled orders visibility
+1. **Create Supplier**: Fill form with name/email → Auto-generated SUP-XXXXXXXX ID + 4-digit PIN
+2. **Save PIN**: Note the PIN displayed (only shown once) to send to supplier separately
+3. **Create Order + Token**: Select supplier → Click "Create Order" → Instant order with verification URL
+4. **View Suppliers & Orders**: Access admin panel at `/admin/index.html`
+5. **Generate Secure Link**: Click "Generate Link" for an order (alternative to step 3)
+6. **Send Email**: Optionally send automated verification email with link (send PIN separately!)
+7. **Manage Documents**: Upload, download, delete PDFs; review and update status
+8. **Archive/Cancel**: Archive suppliers or cancel orders with tracking
+9. **Filter Views**: Toggle archived suppliers and cancelled orders visibility
 
 ### Supplier Workflow
 1. **Receive Email**: Get verification email with secure access link
-2. **Access Order**: Click link → token verified → JWT session created
-3. **View Details**: See order information and existing documents
-4. **Download Documents**: Click download button for any document
-5. **Confirm Delivery**: Submit delivery date and notes
-6. **Upload Documents**: Add PDF/image files for verification
+2. **Verify Link (Optional)**: Use `/verify-link` page to check link authenticity before clicking
+3. **Access Order**: Click link → token verified → redirected to PIN page
+4. **Enter PIN**: Input 4-digit PIN (provided separately) → max 3 attempts
+5. **View Details**: See order information and existing documents after PIN verification
+6. **Download Documents**: Click download button for any document
+7. **Confirm Delivery**: Submit delivery date and notes
+8. **Upload Documents**: Add PDF/image files for verification
 
 ## Getting Started
 
@@ -128,6 +137,8 @@ npx cds deploy --to sqlite
 ### Access Points
 
 - **Admin Panel**: http://localhost:4004/admin/index.html
+- **PIN Entry**: http://localhost:4004/pin/index.html (accessed via verification link)
+- **Link Verification**: http://localhost:4004/verify-link/index.html (public anti-phishing tool)
 - **External Access**: Via secure token link (generated from admin panel)
 - **Internal Service**: http://localhost:4004/service/internal
 - **External Service**: http://localhost:4004/service/external (requires JWT)
@@ -166,22 +177,34 @@ See [TESTING_GUIDE.md](TESTING_GUIDE.md) for detailed test procedures and result
 
 2. **External Supplier Access**:
    - [ ] Access via secure token link
-   - [ ] View order details
+   - [ ] Enter 4-digit PIN (max 3 attempts)
+   - [ ] View order details after PIN verification
    - [ ] Download documents
    - [ ] Confirm delivery with date and notes
    - [ ] Upload documents (PDF/images)
    - [ ] View existing documents with status
 
+3. **Anti-Phishing Verification**:
+   - [ ] Access `/verify-link` page
+   - [ ] Paste verification URL or token
+   - [ ] Verify legitimate links show green status with order details
+   - [ ] Verify fake/invalid tokens show red danger warning
+   - [ ] Verify expired tokens show yellow warning
+   - [ ] Check phishing education section displays
+
 ## Security Architecture
 
 - **Crypto Tokens**: Random 64-character hex tokens for initial verification
+- **4-Digit PIN 2FA**: Second authentication factor with hashed storage and attempt limits
 - **JWT Sessions**: httpOnly cookies with 24-hour expiration
 - **Token Validation**: Single-use, time-limited (42h 13m 37s default)
-- **Token Revocation**: Automatic revocation when orders are cancelled
+- **Token Revocation**: Automatic revocation when orders are cancelled or after 3 failed PIN attempts
 - **Authorization**: Order-scoped access via JWT claims
-- **File Validation**: Type and size restrictions on uploads
+- **Anti-Phishing**: Public link verification tool to check authenticity before clicking
+- **File Validation**: Type and size restrictions on uploads (10MB limit)
 - **Status Controls**: Validated against DocumentStatus code list
 - **Soft Delete**: Archive/cancel operations preserve data integrity with metadata tracking
+- **PIN Security**: Salted SHA-256 hashing, never stored in plain text
 
 ## Email Configuration
 
@@ -220,7 +243,9 @@ For Gmail, use App Passwords: https://myaccount.google.com/apppasswords
 - `POST /uploadDocument` - Upload document (JWT required)
 
 ### Token Verification (`/service/verify`)
-- `GET /verifyAndRedirect` - Verify token and create JWT session
+- `GET /verifyAndRedirect` - Verify token and redirect to PIN entry page
+- `POST /verifyPin` - Verify 4-digit PIN and create JWT session
+- `POST /checkLinkAuthenticity` - Verify link authenticity (public, no auth required)
 
 ## Development Notes
 
@@ -231,7 +256,5 @@ For Gmail, use App Passwords: https://myaccount.google.com/apppasswords
 - Test data provided in `db/data/*.csv`
 
 ## Reference
-
-See [mdDocs/guidelines.md](mdDocs/guidelines.md) for detailed development guidelines.
 
 For SAP CAP documentation: https://cap.cloud.sap/docs/
