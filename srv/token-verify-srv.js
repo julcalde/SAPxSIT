@@ -215,4 +215,96 @@ module.exports = cds.service.impl(function () {
     console.log('[TokenVerification] PIN verified successfully for order:', tokenRecord.order_ID);
     return await createSessionAndSetCookie(req, tokenRecord);
   });
+
+  this.on('checkLinkAuthenticity', async (req) => {
+    try {
+      let urlOrToken = req.data?.urlOrToken || req.query?.urlOrToken;
+      
+      if (!urlOrToken) {
+        return {
+          isValid: false,
+          message: 'Please provide a URL or token to verify',
+          warningLevel: 'danger'
+        };
+      }
+
+      // Extract token from URL if full URL provided
+      let token = urlOrToken.trim();
+      const tokenMatch = token.match(/[?&]token=([a-f0-9]{64})/i);
+      if (tokenMatch) {
+        token = tokenMatch[1];
+      }
+
+      // Validate token format (64 character hex string)
+      if (!/^[a-f0-9]{64}$/i.test(token)) {
+        return {
+          isValid: false,
+          message: '⚠️ Invalid token format. This does not appear to be a legitimate verification link from our system.',
+          warningLevel: 'danger'
+        };
+      }
+
+      // Look up token in database
+      const tokenRecord = await cds.run(
+        SELECT.one
+          .from('SupplierManagement.AccessTokens')
+          .columns('*', { ref: ['order', 'orderNumber'] }, { ref: ['order', 'supplier', 'name'] })
+          .where({ token })
+      );
+
+      if (!tokenRecord) {
+        return {
+          isValid: false,
+          message: '❌ This token was not found in our system. This may be a phishing attempt. Do not click the link!',
+          warningLevel: 'danger'
+        };
+      }
+
+      const now = new Date();
+      const isExpired = tokenRecord.expiresAt && new Date(tokenRecord.expiresAt) < now;
+      const isRevoked = tokenRecord.revoked;
+      const isUsed = tokenRecord.linkInUse;
+
+      // Determine warning level
+      let warningLevel = 'safe';
+      let message = '';
+
+      if (isRevoked) {
+        warningLevel = 'warning';
+        message = '⚠️ This link has been revoked and is no longer valid. Contact support if you need a new link.';
+      } else if (isExpired) {
+        warningLevel = 'warning';
+        message = '⏰ This link has expired. You will need to request a new verification link.';
+      } else if (isUsed) {
+        warningLevel = 'warning';
+        message = '🔒 This link has already been used. For security, each link can only be used once. Request a new link if needed.';
+      } else {
+        const hoursUntilExpiry = Math.floor((new Date(tokenRecord.expiresAt) - now) / (1000 * 60 * 60));
+        warningLevel = 'safe';
+        message = `✅ This is a legitimate verification link from our system. It expires in ${hoursUntilExpiry} hours.`;
+      }
+
+      console.log(`[TokenVerification] Link authenticity check for token: ${token.substring(0, 10)}... - Valid: ${!isRevoked && !isExpired}`);
+
+      return {
+        isValid: true,
+        isExpired,
+        isRevoked,
+        isUsed,
+        createdAt: tokenRecord.createdAt,
+        expiresAt: tokenRecord.expiresAt,
+        orderNumber: tokenRecord.order?.orderNumber || 'N/A',
+        supplierName: tokenRecord.order?.supplier?.name || 'N/A',
+        message,
+        warningLevel
+      };
+    } catch (err) {
+      console.error('[TokenVerification] Link authenticity check error:', err);
+      return {
+        isValid: false,
+        message: 'Unable to verify link authenticity. Please contact support.',
+        warningLevel: 'danger'
+      };
+    }
+  });
 });

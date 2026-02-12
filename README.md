@@ -14,6 +14,16 @@ A complete, production-grade supplier management system with secure token-based 
 - **Status Tracking**: Order and document status with color-coded UI indicators
 
 ### New Features (Feb 2026)
+- **4-Digit PIN 2FA**: Two-factor authentication with hashed PINs for supplier access
+  - Random PIN generation on supplier creation
+  - PIN entry page with max 3 attempts
+  - Automatic token lockout after failed attempts
+  - Secure PIN hashing with salt (never stored in plain text)
+- **Anti-Phishing Verification Page**: Public link verification tool at `/verify-link`
+  - Verify link authenticity without clicking
+  - Shows order details, creation date, expiration status
+  - Warning levels (safe/warning/danger) with color-coded UI
+  - Protects suppliers from phishing attacks
 - **Supplier Creation**: Create new suppliers with auto-generated IDs (SUP-XXXXXXXX format)
 - **Order + Token Creation**: Generate orders with verification tokens in single action
 - **Soft Delete System**: 
