@@ -202,22 +202,38 @@ module.exports = cds.service.impl(function () {
     const inputPinHash = hashPin(pin);
     
     if (inputPinHash !== supplier.pinHash) {
-      // Increment failed attempts
-      const newAttempts = (tokenRecord.pinAttempts || 0) + 1;
-      await cds.run(
-        UPDATE('SupplierManagement.AccessTokens', tokenRecord.ID).set({
-          pinAttempts: newAttempts,
-          revoked: newAttempts >= MAX_PIN_ATTEMPTS
-        })
-      );
+      // Fire-and-forget: increment failed attempts in a detached transaction
+      (async () => {
+        await cds.tx(async tx => {
+          const currentToken = await tx.run(
+            SELECT.one
+              .from('SupplierManagement.AccessTokens')
+              .where({ ID: tokenRecord.ID })
+          );
+          const attempts = (currentToken.pinAttempts || 0) + 1;
+          await tx.run(
+            UPDATE('SupplierManagement.AccessTokens')
+              .where({ ID: tokenRecord.ID })
+              .set({
+                pinAttempts: attempts,
+                revoked: attempts >= MAX_PIN_ATTEMPTS
+              })
+          );
+        });
+      })();
 
-      const remaining = MAX_PIN_ATTEMPTS - newAttempts;
+      // Fetch current attempts to show remaining (may be off by 1 if user double-submits quickly)
+      const currentToken = await cds.run(
+        SELECT.one
+          .from('SupplierManagement.AccessTokens')
+          .where({ ID: tokenRecord.ID })
+      );
+      const attempts = (currentToken.pinAttempts || 0) + 1;
+      const remaining = MAX_PIN_ATTEMPTS - attempts;
       if (remaining > 0) {
-        console.warn(`[TokenVerification] Failed PIN attempt ${newAttempts}/${MAX_PIN_ATTEMPTS} for order:`, tokenRecord.order_ID);
         return req.error(401, `Incorrect PIN. ${remaining} attempt(s) remaining.`);
       } else {
-        console.error('[TokenVerification] Token revoked after max PIN attempts for order:', tokenRecord.order_ID);
-        return req.error(403, 'Token has been locked due to too many failed attempts.');
+        return req.error(403, 'Too many failed attempts. Please contact the Support to request a new link.');
       }
     }
 
