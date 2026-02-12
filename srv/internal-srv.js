@@ -1,10 +1,10 @@
 const cds = require('@sap/cds');
 const crypto = require('crypto');
 const { randomUUID } = require('crypto');
-const nodemailer = require('nodemailer');
 const fs = require('fs').promises;
 const path = require('path');
 const { generatePublicUrl } = require('./utils/url-generator');
+const { sendVerificationEmail, initializeTransporter } = require('../utils/emailService');
 
 module.exports = cds.service.impl(function () {
   const { Suppliers, Orders, Documents, AccessTokens, DocumentStatus } = this.entities;
@@ -398,46 +398,13 @@ module.exports = cds.service.impl(function () {
       const tokenResult = await generateToken(orderID, req.user?.id || 'admin');
       const verifyUrl = generatePublicUrl(req, tokenResult.token);
 
-      // Configure email transporter
-      const transporter = nodemailer.createTransport({
-        host: process.env.MAIL_HOST,
-        port: Number(process.env.MAIL_PORT || 587),
-        secure: false,
-        auth: {
-          user: process.env.MAIL_USER,
-          pass: process.env.MAIL_PASS
-        }
-      });
-
-      // Load email template
-      const templatePath = path.join(process.cwd(), 'srv', 'templates', 'verification-email.html');
-      let html = await fs.readFile(templatePath, 'utf8');
-
-      // Try to embed CSS inline
-      try {
-        const cssPath = path.join(process.cwd(), 'srv', 'templates', 'email-styles.css');
-        const css = await fs.readFile(cssPath, 'utf8');
-        html = html.replace(
-          /<link rel="stylesheet" href="email-styles\.css"\s*\/?>/i,
-          `<style>${css}</style>`
-        );
-      } catch {
-        html = html.replace(/<link rel="stylesheet" href="email-styles\.css"\s*\/?>/i, '');
-      }
-
-      // Replace placeholders
-      html = html
-        .replaceAll('{{orderID}}', escapeHtml(order.orderNumber || orderID))
-        .replaceAll('{{verifyUrl}}', escapeAttr(verifyUrl))
-        .replaceAll('{{supplierName}}', escapeHtml(order.supplier.name || 'Supplier'))
-        .replaceAll('{{expiresAt}}', escapeHtml(tokenResult.expiresAt.toLocaleString()));
-
-      // Send email
-      await transporter.sendMail({
-        from: `"Delivery Verification" <${process.env.MAIL_USER}>`,
-        to: order.supplier.email,
-        subject: `Delivery Verification Required - Order ${order.orderNumber || orderID}`,
-        html
+      // Send email using shared email service
+      await sendVerificationEmail({
+        supplierEmail: order.supplier.email,
+        supplierName: order.supplier.name || 'Supplier',
+        orderNumber: order.orderNumber || orderID,
+        verifyUrl: verifyUrl,
+        expiresAt: tokenResult.expiresAt
       });
 
       // Update order status
